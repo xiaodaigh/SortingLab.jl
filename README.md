@@ -1,4 +1,7 @@
 # SortingLab
+This is where I experiment with various sorting algorithms and APIs. If succesful I will try to 
+contribute back to Julia base or SortingAlgorithms.jl
+
 
 [![Build Status](https://travis-ci.org/xiaodaigh/SortingLab.jl.svg?branch=master)](https://travis-ci.org/xiaodaigh/SortingLab.jl)
 
