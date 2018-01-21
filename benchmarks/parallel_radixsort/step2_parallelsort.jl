@@ -1,5 +1,4 @@
 using Base.Threads, SortingAlgorithms
-
 import SortingAlgorithms: StringRadixSort, StringRadixSortAlg, uint_mapping, load_bits
 import StatsBase: BaseRadixSortSafeTypes
 import Base: Forward, ForwardOrdering, ReverseOrdering, sort!, Reverse
@@ -23,7 +22,7 @@ function uint_hist(bits::Vector{T}) where T <: Unsigned
 end
 
 # sort it by using sorttwo! on the pointer
-function sort_1fasterhistogram!(svec::Vector{String}, lo::Int, hi::Int, ::StringRadixSortAlg, o::O) where O <: Union{ForwardOrdering, ReverseOrdering}
+function sort_2fastersort!(svec::Vector{String}, lo::Int, hi::Int, ::StringRadixSortAlg, o::O) where O <: Union{ForwardOrdering, ReverseOrdering}
     if lo >= hi;  return svec;  end
     # the length subarray to sort
     l = hi - lo + 1
@@ -68,7 +67,7 @@ end
 Sort both the `vs` and reorder `index` at the same. This allows for faster sortperm
 for radix sort.
 """
-function sorttwo!(vs::Vector{T}, index, lo::Int = 1, hi::Int=length(vs), RADIX_SIZE = 16, RADIX_MASK = 0xffff) where T <:BaseRadixSortSafeTypes
+function sorttwo_ok!(vs::Vector{T}, index, lo::Int = 1, hi::Int=length(vs), RADIX_SIZE = 16, RADIX_MASK = 0xffff) where T <:BaseRadixSortSafeTypes
     # Input checking
     if lo >= hi;  return (vs, index);  end
 
@@ -89,7 +88,7 @@ function sorttwo!(vs::Vector{T}, index, lo::Int = 1, hi::Int=length(vs), RADIX_S
     swaps = 0
     len = hi-lo+1
 
-    index1 = similar(index)
+    # index1 = similar(index)
     ts=similar(vs)
     for j = 1:iters
         # Unroll first data iteration, check for degenerate case
@@ -109,7 +108,7 @@ function sorttwo!(vs::Vector{T}, index, lo::Int = 1, hi::Int=length(vs), RADIX_S
 
         ci = cbin[idx]
         ts[ci] = vs[hi]
-        index1[ci] = index[hi]
+        # index1[ci] = index[hi]
         cbin[idx] -= 1
 
         # Finish the loop...
@@ -118,48 +117,65 @@ function sorttwo!(vs::Vector{T}, index, lo::Int = 1, hi::Int=length(vs), RADIX_S
             idx = Int((v >> (j-1)*RADIX_SIZE) & RADIX_MASK) + 1
             ci = cbin[idx]
             ts[ci] = vs[i]
-            index1[ci] = index[i]
+            # index1[ci] = index[i]
             cbin[idx] -= 1
         end
         vs,ts = ts,vs
-        index, index1 = index1, index
+        # index, index1 = index1, index
         swaps += 1
     end
 
     if isodd(swaps)
         vs,ts = ts,vs
-        index, index1 = index1, index
+        # index, index1 = index1, index
         for i = lo:hi
             @inbounds vs[i] = ts[i]
-            @inbounds index[i] = index1[i]
+            # @inbounds index[i] = index1[i]
         end
     end
     (vs, index)
 end
-
 
 using SortingLab
 using Base.Test
 using SortingAlgorithms
 import SortingAlgorithms: load_bits
 
-# write your own tests here
-# @test 1 == 2
 N = 100_000_000
 K = 100
 samplespace = "id".*dec.(1:N÷K,10);
 srand(1)
 svec = rand(samplespace, N);
 
+function hehe(svec)
+    index = collect(1:length(svec))
+    bits = load_bits.(UInt, svec, 4)
+    gc()
+    @time sorttwo_ok!(bits, index)
+
+    bits = load_bits.(UInt, svec, 4)
+    gc()
+    @time SortingLab.sorttwo!(bits, index)
+end
+@time [hehe(svec) for i=1:5]
+
+function testfusion(x, y, z)
+    x1 = Base.zext_int.(UInt, x) .<< 32
+    xy = x1 .& y
+    ((x1 .>> 32) .<< 32) .& z
+end
+
+x = rand(UInt32, N);
+y = rand(UInt32, N);
+z = rand(UInt32, N);
+[@time testfusion(x,y,z) for i=1:5]
+
 using BenchmarkTools
-
-
-
 # overall sorting is faster too
 function ghi(svec)
     csvec = copy(svec)
     gc()
-    @time a = @elapsed sort_1fasterhistogram!(csvec, 1, length(csvec), StringRadixSort, Base.Forward)
+    @time a = @elapsed sort_2fastersort!(csvec, 1, length(csvec), StringRadixSort, Base.Forward)
 
     csvec = copy(svec)
     gc()

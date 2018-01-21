@@ -5,7 +5,7 @@ import SortingAlgorithms: load_bits
 
 # write your own tests here
 # @test 1 == 2
-N = 50_000_000
+N = 100_000_000
 K = 100
 samplespace = "id".*dec.(1:N÷K,10);
 srand(1)

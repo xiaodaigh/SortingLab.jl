@@ -1,4 +1,6 @@
-
+# the purpose of this file is to find a winner for the fastest histogram
+# It was found that (unsurprisingly) the multithreaded version is faster
+tic()
 using Base.Threads
 using Plots
 using BenchmarkTools, DataFrames
@@ -6,7 +8,8 @@ import SortingAlgorithms: uint_mapping, RADIX_MASK, RADIX_SIZE, load_bits
 
 using Base.Threads
 
-function uint_hist(bits::Vector{T}) where T <: Unsigned
+# multi-threaded histogram count
+function threadedcount(bits::Vector{T}) where T <: Unsigned
     iter = sizeof(T)÷2
     hist = zeros(UInt32, 65536, iter, nthreads())
     @threads for j = 1:length(bits)
@@ -22,6 +25,7 @@ function uint_hist(bits::Vector{T}) where T <: Unsigned
     hist[:,:,1]
 end
 
+# single threaded histogram count from SortingAlgorithms.jl
 function hist_sortingalgorithms(bits::Vector{T}) where T<:Unsigned
     iters = sizeof(T)÷2
     bin = zeros(UInt32, 65536, iters)
@@ -35,21 +39,20 @@ function hist_sortingalgorithms(bits::Vector{T}) where T<:Unsigned
     end
 end
 
-
-function count64(bits)
-    hist = zeros(UInt, 1<<16, 4)
+function count64(bits::Vector{T}) where T<:Unsigned
+    hist = zeros(UInt32, 1<<16, 4)
     for x1 in bits
-        for i in 0:3
+        for i in 0:sizeof(T)÷2-1
             @inbounds hist[1+Int((x1 >> (i << 4)) & 0xffff), i+1] += 1
         end
     end
     hist
 end
 
-function count16(bits)
-    hist = zeros(UInt64, 1<<16, 4)
+function count16(bits::Vector{T}) where T<:Unsigned
+    hist = zeros(UInt32, 1<<16, 4)
     hist_hot = zeros(UInt16, 1<<16)
-    @inbounds for i in 0:3
+    @inbounds for i in 0:sizeof(T)÷2-1
         for x1 in bits
             idx = 1+ Int((x1 >> (i << 4)) & 0xffff)
             hist_hot[idx] += UInt16(1)
@@ -65,10 +68,10 @@ function count16(bits)
     hist
 end
 
-function count8(bits)
-    hist = zeros(UInt64, 1<<16, 4)
+function count8(bits::Vector{T}) where T<:Unsigned
+    hist = zeros(UInt32, 1<<16, 4)
     hist_hot = zeros(UInt8, 1<<16)
-    @inbounds for i in 0:3
+    @inbounds for i in 0:sizeof(T)÷2-1
         for x1 in bits
             idx = 1+ Int((x1 >> (i << 4)) & 0xffff)
             hist_hot[idx] += UInt8(1)
@@ -84,10 +87,10 @@ function count8(bits)
     hist
 end
 
-function count8t(bits)
-    hist = zeros(UInt64, 1<<16, 4)
-    hist_hot = zeros(UInt8, 1<<16, 4)
-    @threads for i in 0:3 
+function count8t(bits::Vector{T}) where T<:Unsigned
+    hist = zeros(UInt32, 1<<16, sizeof(T)÷2
+    hist_hot = zeros(UInt8, 1<<16, sizeof(T)÷2
+    @threads for i in 0:sizeof(T)÷2-1
         @inbounds for x1 in bits
             idx = 1+ Int((x1 >> (i << 4)) & 0xffff)
             hist_hot[idx,i+1] += UInt8(1)
@@ -102,10 +105,10 @@ function count8t(bits)
     hist
 end
 
-function count8x(bits)
-    hists = [zeros(UInt64, 1<<16) for i in 1:4]
-    hists_hot = [zeros(UInt8, 1<<16) for i in 1:4]
-    @threads for i in 0:3
+function count8x(bits::Vector{T}) where T<:Unsigned
+    hists = [zeros(UInt32, 1<<16) for i in 1:sizeof(T)÷2]
+    hists_hot = [zeros(UInt8, 1<<16) for i in 1:sizeof(T)÷2]
+    @threads for i in 0:sizeof(T)÷2-1
         hist = hists[i+1]
         hist_hot = hists_hot[i+1]
         i4 = UInt8(i<<4)
@@ -126,50 +129,62 @@ end
 using BenchmarkTools
 N = 100_000_000
 K = 100
-@time samplespace = "id".*dec.(1:N÷K,10);
-@time svec = rand(samplespace, N)
-bits = load_bits.(UInt32, svec, 0)
-@time uint_hist(bits);
-@time hist_sortingalgorithms(bits);
+
+function test_histogram(N,K)
+    @time samplespace = "id".*dec.(1:N÷K,10);
+    @time svec = rand(load_bits.(UInt32, samplespace), N);
+
+    naiveres = @belapsed threadedcount($svec)
+    sortingalgorithms = @belapsed hist_sortingalgorithms($svec)
+    count64res = @belapsed count64($svec)
+    count16res = @belapsed count16($svec)
+    count8res = @belapsed count8($svec)
+    count8tres = @belapsed count8t($svec)
+    count8xres = @belapsed count8x($svec)
+
+    first4res = DataFrame(
+        alg = ["orig",    "SortingAlgorithms.jl", "count64",  "count16",  "count8",   
+            "count8t",  "count8x"],
+        timing = [naiveres,  sortingalgorithms,      count64res, count16res, count8res, 
+            count8tres,  count8xres])
 
 
+    b1 = bar(first4res[:alg], first4res[:timing], 
+        label="time (sec)", title = "sort first 4 bytes - $(N/1_000_000)m")
+
+    @time svec = rand(load_bits.(UInt, samplespace, 4), N);
+    gc()
+    naiveres = @belapsed threadedcount($svec)
+    sortingalgorithms = @belapsed hist_sortingalgorithms($svec)
+    count64res = @belapsed count64($svec)
+    count16res = @belapsed count16($svec)
+    count8res = @belapsed count8($svec)
+    count8tres = @belapsed count8t($svec)
+    count8xres = @belapsed count8x($svec)
+
+    last8res = DataFrame(
+        alg = ["orig",    "SortingAlgorithms.jl", "count64",  "count16",  "count8",   
+            "count8t",  "count8x"],
+        timing = [naiveres,  sortingalgorithms,      count64res, count16res, count8res, 
+            count8tres,  count8xres])
+
+    b2 = bar(first4res[:alg], first4res[:timing], 
+        label="time (sec)", title = "sort last 8 bytes - $(N/1_000_000)m")
+
+    plot(b1,b2)
+    savefig("compare_rbench_count_uint.png")
+
+    first4res, last8res, b1, b2
+end
+
+test_histogram(1_000_000, 100)
 
 
-@time svec = rand(load_bits.(UInt, samplespace), N);
-gc()
-
-
-
-naiveres = @belapsed threadedcount($svec)
-count64res = @belapsed count64($svec)
-count16res = @belapsed count16($svec)
-count8res = @belapsed count8($svec)
-count8tres = @belapsed count8t($svec)
-count8xres = @belapsed count8x($svec)
-
-b1 = bar(["orig","count64","count16","count8", "count8t","count8x"], [naiveres, count64res, count16res, count8res, count8tres, count8xres], label="time (sec)", title = "sort first 8 bytes")
-#savefig("Single vs Multithreaded count.png")
-
-@time svec = rand(load_bits.(UInt, samplespace, 8), N);
-gc()
-naiveres = @belapsed threadedcount($svec)
-count64res = @belapsed count64($svec)
-count16res = @belapsed count16($svec)
-count8res = @belapsed count8($svec)
-count8tres = @belapsed count8t($svec)
-count8xres = @belapsed count8x($svec)
-
-b2 = bar(["orig","count64","count16","count8", "count8t","count8x"], [naiveres, count64res, count16res, count8res, count8tres, count8xres], label="time (sec)", title = "sort next 6 bytes")
-
-plot(b1,b2)
-savefig("compare_rbench_count_uint.png")
-
+test_histogram(100_000_000, 100)
+toc()
 
 # @btime threadedcount($svec);
 # @btime threadedcount($svec, UInt32); # a bit slower but uses only half the memory
-
-
-
 # svec = rand(rand(UInt, 10_000_000), 1_000_000_000);
 # d = @elapsed threadedcount(svec)
 # a = @elapsed count64(svec)
