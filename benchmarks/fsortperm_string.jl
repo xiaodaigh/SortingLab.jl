@@ -9,7 +9,7 @@ srand(1);
 @time svec = rand(samplespace, 100_000_000);
 
 
-@time isvec = InternedString.(svec)
+# @time isvec = InternedString.(svec)
 
 #@time SortingAlgorithms.sortperm(svec, alg=StringRadixSort); # 51-55
 # @time sortperm(svec); # 228

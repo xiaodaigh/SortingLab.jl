@@ -17,12 +17,17 @@ primitive type Bits112 112 end
 primitive type Bits120 120 end
 
 # winner from benchmarks/which_is_the_fastest_UInt_histogram.jl
-function uint_hist(bits::Vector{T}) where T <: Unsigned
-    iter = sizeof(T)÷2
-    hist = zeros(UInt32, 65536, iter, nthreads())
+"""
+    uint_hist(bits, [RADIX_SIZE = 16, RADIX_MASK = 0xffff])
+Computes a histogram (counts) for the vector RADIX_SIZE bits at a time. E.g. if eltype(bits) is UInt64 and RADIX_SIZE is 16
+then 4 histograms are created for each of the 16 bit chunks.
+"""
+function uint_hist(bits::Vector{T}, RADIX_SIZE = 16, RADIX_MASK = 0xffff) where T <: Unsigned
+    iter = ceil(Integer, sizeof(T)*8/RADIX_SIZE)
+    hist = zeros(UInt32, 2^RADIX_SIZE, iter, nthreads())
     @threads for j = 1:length(bits)
         for i = 0:iter-1
-            @inbounds hist[1+Int((bits[j] >> (i << 4)) & 0xffff), i+1, threadid()] += 1
+            @inbounds hist[1+Int((bits[j] >> (i * RADIX_SIZE)) & RADIX_MASK), i+1, threadid()] += 1
         end
     end
     @threads for j in 1:iter
@@ -91,7 +96,7 @@ function sorttwo!(vs::Vector{T}, index, lo::Int = 1, hi::Int=length(vs), RADIX_S
     nbuckets = 2^RADIX_SIZE
     
     # Histogram for each element, radix
-    bin = uint_hist(vs)
+    bin = uint_hist(vs, RADIX_SIZE, RADIX_MASK)
 
     # bin = zeros(UInt32, nbuckets, iters)
     # if lo > 1;  bin[1,:] = lo-1;  end
@@ -270,7 +275,12 @@ function load_bits(::Type{T}, s::String, skipbytes = 0)::T where T <: Unsigned
 end
 
 # Radix sort for strings
-function radixsort!(svec::AbstractVector{String}, lo::Int, hi::Int, o::O) where O <: Union{ForwardOrdering, ReverseOrdering}
+"""
+    radixsort!(svec)
+
+Applies radix sort to the string vector, svec, and sort it in place.
+"""
+function radixsort!(svec::AbstractVector{String}, lo::Int, hi::Int, o::O; RADIX_SIZE = 16, RADIX_MASK = 0xffff) where O <: Union{ForwardOrdering, ReverseOrdering}
     if lo >= hi;  return svec;  end
     # the length subarray to sort
     l = hi - lo + 1
@@ -296,10 +306,10 @@ function radixsort!(svec::AbstractVector{String}, lo::Int, hi::Int, o::O) where 
             bits64 = zeros(UInt64, l)
             if o == Reverse
                 bits64[lo:hi] .= .~load_bits.(UInt64, @view(svec[lo:hi]), skipbytes)
-                sorttwo!(bits64, svec, lo, hi)
+                sorttwo!(bits64, svec, lo, hi, RADIX_SIZE, RADIX_MASK)
             else
                 bits64[lo:hi] .= load_bits.(UInt64, @view(svec[lo:hi]), skipbytes)
-                sorttwo!(bits64, svec, lo, hi)
+                sorttwo!(bits64, svec, lo, hi, RADIX_SIZE, RADIX_MASK)
             end
             lens -= 8
         end
@@ -308,10 +318,10 @@ function radixsort!(svec::AbstractVector{String}, lo::Int, hi::Int, o::O) where 
             bits32 = zeros(UInt32, l)
             if o == Reverse
                 bits32[lo:hi] .= .~load_bits.(UInt32, @view(svec[lo:hi]), skipbytes)
-                sorttwo!(bits32, svec, lo, hi)
+                sorttwo!(bits32, svec, lo, hi, RADIX_SIZE, RADIX_MASK)
             else
                 bits32[lo:hi] .= load_bits.(UInt32, @view(svec[lo:hi]), skipbytes)
-                sorttwo!(bits32, svec, lo, hi)
+                sorttwo!(bits32, svec, lo, hi, RADIX_SIZE, RADIX_MASK)
             end
             lens -= 4
         end
@@ -321,6 +331,8 @@ end
 
 """
     radixsort(svec, rev = false)
+
+Applies radix sort to the string vector, svec, and sort it in place.
 """
-radixsort(svec::Vector{String}, rev = false) = radixsort!(copy(svec), rev)
-radixsort!(svec::Vector{String}, rev = false) =  radixsort!(svec, 1, length(svec), rev ? Base.Reverse : Base.Forward)
+radixsort(svec::Vector{String}, rev = false, radix_opts = (16, 0xffff)) = radixsort!(copy(svec), rev, radix_opts)
+radixsort!(svec::Vector{String}, rev = false, radix_opts = (16, 0xffff)) =  radixsort!(svec, 1, length(svec), rev ? Base.Reverse : Base.Forward, RADIX_SIZE = radix_opts[1], RADIX_MASK = radix_opts[2])

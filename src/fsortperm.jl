@@ -30,6 +30,7 @@ end
 
 import SortingAlgorithms: uint_mapping
 import Base.Ordering
+# sorts vs using radix sort but skip the last few bits as defined by skipbits
 function sort32!(vs::AbstractVector{T}, lo::Int, hi::Int, o::Ordering, ts=similar(vs); skipbits = 32, RADIX_SIZE = 16, RADIX_MASK = 0xffff) where T
     # Input checking
     if lo >= hi;  return vs;  end
@@ -88,6 +89,11 @@ function sort32!(vs::AbstractVector{T}, lo::Int, hi::Int, o::Ordering, ts=simila
     vs
 end
 
+"""
+    fsortperm(svec)
+
+Faster sortperm for string vectors
+"""
 function fsortperm(svec::AbstractVector{String})
     strlen = maximum(sizeof, svec)
     strlen = max(strlen-4, 0)

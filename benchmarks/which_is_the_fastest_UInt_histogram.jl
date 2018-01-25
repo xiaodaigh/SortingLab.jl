@@ -6,24 +6,29 @@ using Plots
 using BenchmarkTools, DataFrames
 import SortingAlgorithms: uint_mapping, RADIX_MASK, RADIX_SIZE, load_bits
 
-using Base.Threads
-
 # multi-threaded histogram count
+# there seems to be some instability
 function threadedcount(bits::Vector{T}) where T <: Unsigned
-    iter = sizeof(T)÷2
+    iter = sizeof(T)÷2::Int
     hist = zeros(UInt32, 65536, iter, nthreads())
-    @threads for j = 1:length(bits)
-        for i = 0:iter-1
-            @inbounds hist[1+Int((bits[j] >> (i << 4)) & 0xffff), i+1, threadid()] += 1
-        end
+    l = length(bits)::Int
+    @threads for j = 1:l
+        # for i = 0:iter-1
+        #     # idx = (bits[j] >> (i << 4)) & T(0xffff)
+        #     # idx = bits[j]
+        #     # @inbounds hist[idx, i+1, threadid()] += 1
+        # end
     end
+    nt = Threads.nthreads()
     @threads for j in 1:iter
-        for i = 2:nthreads()
-            @inbounds hist[:, j, 1] .+= hist[:, j, i]
+        for i = 2:nt
+            # @inbounds hist[:, j, 1] .+= hist[:, j, i]
         end
     end
     hist[:,:,1]
 end
+
+@code_warntype threadedcount()
 
 # single threaded histogram count from SortingAlgorithms.jl
 function hist_sortingalgorithms(bits::Vector{T}) where T<:Unsigned
@@ -88,8 +93,8 @@ function count8(bits::Vector{T}) where T<:Unsigned
 end
 
 function count8t(bits::Vector{T}) where T<:Unsigned
-    hist = zeros(UInt32, 1<<16, sizeof(T)÷2
-    hist_hot = zeros(UInt8, 1<<16, sizeof(T)÷2
+    hist = zeros(UInt32, 1<<16, sizeof(T)÷2)
+    hist_hot = zeros(UInt8, 1<<16, sizeof(T)÷2)
     @threads for i in 0:sizeof(T)÷2-1
         @inbounds for x1 in bits
             idx = 1+ Int((x1 >> (i << 4)) & 0xffff)
@@ -168,7 +173,7 @@ function test_histogram(N,K)
         timing = [naiveres,  sortingalgorithms,      count64res, count16res, count8res, 
             count8tres,  count8xres])
 
-    b2 = bar(first4res[:alg], first4res[:timing], 
+    b2 = bar(last8res[:alg], last8res[:timing], 
         label="time (sec)", title = "sort last 8 bytes - $(N/1_000_000)m")
 
     plot(b1,b2)
@@ -180,8 +185,15 @@ end
 test_histogram(1_000_000, 100)
 
 
-test_histogram(100_000_000, 100)
+res = test_histogram(100_000_000, 100)
 toc()
+
+N = 1000
+K = 100
+import SortingLab: load_bits
+@time samplespace = "id".*dec.(1:N÷K,10);
+@time svec = rand(load_bits.(UInt32, samplespace), N);
+@code_warntype threadedcount(svec)
 
 # @btime threadedcount($svec);
 # @btime threadedcount($svec, UInt32); # a bit slower but uses only half the memory
@@ -211,3 +223,38 @@ toc()
 
 # bar(["orig","count16","count8", "count8t", "count8x"], [d, b,c1, c, f], label="time (sec)")
 # savefig("Single vs Multithreaded count.png")
+
+# function abc(bits::Vector{T}) where T <: Unsigned
+#     iter = sizeof(T)÷2::Int
+#     # hist = zeros(UInt32, 65536, iter, nthreads())
+#     # l = length(bits)::Int
+#     # @threads for j = 1:l
+#     #     # for i = 0:iter-1
+#     #     #     # idx = (bits[j] >> (i << 4)) & T(0xffff)
+#     #     #     # idx = bits[j]
+#     #     #     # @inbounds hist[idx, i+1, threadid()] += 1
+#     #     # end
+#     # end
+#     nt = Threads.nthreads()
+#     @threads for k in 1:iter
+#         for i = 2:nt
+#             # @inbounds hist[:, j, 1] .+= hist[:, j, i]
+#         end
+#     end
+#     # hist[:,:,1]
+#     1
+# end
+
+# @code_warntype abc(svec)
+
+# function def()
+#     @threads for j = 1:8
+#     end
+
+#     @threads for k = 1:8
+#     end
+
+#     nothing
+# end
+
+# @code_warntype def()
