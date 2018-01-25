@@ -2,7 +2,28 @@
 Experimental implementation of sorting algorithms and APIs. If proven to be useful they will be contributed back to Julia base or SortingAlgorithms.jl in time
 
 # Faster String Sort
+
+## Usage
+```julia
+using SortingLab;
+
+N = 1_000_000;
+K = 100;
+
+svec = rand("id".*dec.(1:N÷K, 10), N);
+svec_sorted = radixsort(svec);
+issorted(svec_sorted) # true
+issorted(svec) # false
+
+# in place sort
+radixsort!(svec);
+issorted(svec) # true
+```
+
+## Benchmark
 ![Base.sort vs SortingLab.radixsort](benchmarks/sort_vs_radixsort.png)
+
+## Benchmarking code
 ```julia
 using SortingLab;
 using BenchmarkTools;
