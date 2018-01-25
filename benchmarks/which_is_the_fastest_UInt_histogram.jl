@@ -1,5 +1,8 @@
 # the purpose of this file is to find a winner for the fastest histogram
 # It was found that (unsurprisingly) the multithreaded version is faster
+# actually the story is a bit murky now and it's best to wait for v0.7.0
+# I seem to find type instability issues with the threadedcount code
+# but it disappeared in v0.7.0, so waiting might be a good strategy
 tic()
 using Base.Threads
 using Plots
