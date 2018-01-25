@@ -3,7 +3,7 @@ Experimental implementation of sorting algorithms and APIs. If proven to be usef
 
 # Faster String Sort
 ![Base.sort vs SortingLab.radixsort](benchmarks/sort_vs_radixsort.png)
-``julia
+```julia
 using SortingLab;
 using BenchmarkTools;
 
