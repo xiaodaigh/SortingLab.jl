@@ -1,7 +1,7 @@
 # SortingLab
 Experimental implementation of sorting algorithms and APIs. If proven to be useful they will be contributed back to Julia base or SortingAlgorithms.jl in time
 
-# Faster String Sort
+# Faster String Sort and Sortperm
 
 ## Usage
 ```julia
@@ -14,6 +14,10 @@ svec = rand("id".*dec.(1:N÷K, 10), N);
 svec_sorted = radixsort(svec);
 issorted(svec_sorted) # true
 issorted(svec) # false
+
+# faster sortperm
+sorted_idx = fsortperm(svec)
+issorted(svec[sorted_idx])
 
 # in place sort
 radixsort!(svec);
