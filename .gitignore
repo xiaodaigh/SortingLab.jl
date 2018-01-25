@@ -4,3 +4,4 @@
 
 *.png
 !sort_vs_radixsort.png
+string_sort_vs_r\.csv
