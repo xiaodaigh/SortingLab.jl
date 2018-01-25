@@ -19,3 +19,4 @@ groupedbar(
     [sort_id_1m, radixsort_id_1m,sort_r_1m,radixsort_r_1m], 
     group = repeat(["sort","radixsort"], outer = 2),
     title = "Strings sorting perf (1m): Base.sort vs SortingLab.radixsort")
+savefig("benchmarks/sort_vs_radixsort.png")
