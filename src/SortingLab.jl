@@ -3,7 +3,7 @@ module SortingLab
 # export sort, sort!
 # package code goes here
 
-export fsortperm
+export fsortperm, radixsort, radixsort!
 
 include("radixsort.jl")
 include("fsortperm.jl")

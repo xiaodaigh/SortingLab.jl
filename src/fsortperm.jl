@@ -28,14 +28,14 @@ end
 # @time svec_sorted = radixsort(svec);
 # print(issorted(svec_sorted))
 
-import SortingAlgorithms: uint_mapping, RadixSortAlg
+import SortingAlgorithms: uint_mapping
 import Base.Ordering
-function sort32!(vs::AbstractVector, lo::Int, hi::Int, ::RadixSortAlg, o::Ordering, ts=similar(vs); skipbits = 32, RADIX_SIZE = 16, RADIX_MASK = 0xffff)
+function sort32!(vs::AbstractVector{T}, lo::Int, hi::Int, o::Ordering, ts=similar(vs); skipbits = 32, RADIX_SIZE = 16, RADIX_MASK = 0xffff) where T
     # Input checking
     if lo >= hi;  return vs;  end
 
     # Make sure we're sorting a bits type
-    T = Base.Order.ordtype(o, vs)
+    # T = Base.Order.ordtype(o, vs)
 
     # Init
     iters = ceil(Integer, sizeof(T)*8/RADIX_SIZE)
@@ -90,16 +90,15 @@ end
 
 function fsortperm(svec::AbstractVector{String})
     strlen = maximum(sizeof, svec)
-
     strlen = max(strlen-4, 0)
     underly_bits = load_uint.(svec, strlen) .| collect(UInt32(1):UInt32(length(svec)))
-    underly_bits = sort32!(underly_bits, 1, length(underly_bits), RadixSort, Base.Forward)
+    underly_bits = sort32!(underly_bits, 1, length(underly_bits),  Base.Forward)
     ss = (underly_bits .<< 32) .>> 32
  
     while strlen > 0
         strlen = max(strlen-4, 0)
         underly_bits = load_uint.(@view(svec[ss]), strlen) .| ss
-        underly_bits = sort32!(underly_bits, 1, length(underly_bits), RadixSort, Base.Forward)
+        underly_bits = sort32!(underly_bits, 1, length(underly_bits),  Base.Forward)
         ss = (underly_bits .<< 32) .>> 32
     end
     return ss
