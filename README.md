@@ -2,7 +2,7 @@
 Experimental implementation of sorting algorithms and APIs. If proven to be useful they will be contributed back to Julia base or SortingAlgorithms.jl in time
 
 # Faster String Sort
-![Base.sort vs SortingLab.radixsort](be
+![Base.sort vs SortingLab.radixsort](benchmarks/sort_vs_radixsort.png)
 ``julia
 using SortingLab;
 using BenchmarkTools;
