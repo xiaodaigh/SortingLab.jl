@@ -1,13 +1,14 @@
 using SortingLab;
 using BenchmarkTools;
 
-N = 1_000_000;
+N = 100_000_000;
 K = 100;
 
 tic()
 svec = rand("id".*dec.(1:N÷K, 10), N);
+@time radixsort(svec);
 sort_id_1m = @belapsed sort($svec);
-radixsort_id_1m = @belapsed radixsort($svec);
+
 
 sortperm_id_1m = @belapsed sortperm($svec);
 fsortperm_id_1m = @belapsed fsortperm($svec);
