@@ -7,3 +7,5 @@
 string_sort_vs_r\.csv
 
 benchmarks/interned_string_results/
+
+*.csv

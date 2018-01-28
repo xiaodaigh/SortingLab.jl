@@ -3,6 +3,22 @@ using Base.Test
 
 N = 1_000_000
 K = 100
+
+# categorical sort
+using SortingLab, CategoricalArrays, Base.Test, BenchmarkTools
+pools = "id".*dec.(1:100,3);
+byvec = CategoricalArray{String, 1}(rand(UInt32(1):UInt32(length(pools)), 2^31-1), CategoricalPool(pools, false));
+byvec = compress(byvec);
+
+@benchmark byvec_sorted = fsort($byvec)
+byvec_sorted = fsort(byvec);
+@test issorted(byvec_sorted)
+
+@benchmark fsort!(byvec)
+fsort!(byvec)
+@test issorted(byvec)
+
+
 # String sort
 tic()
 # const M=1000; const K=100; 

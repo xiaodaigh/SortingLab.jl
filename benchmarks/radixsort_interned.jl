@@ -76,4 +76,6 @@ end
 
 # compare_interned_string_sort(1000,10)
 
-@time compare_interned_string_sort.((1:10).*(10^7), 100)
+@time compare_interned_string_sort.((1:10).*(10^8), 100)
+
+# @time compare_interned_string_sort.((1:10).*(10^7), 100)
