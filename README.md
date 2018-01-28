@@ -1,7 +1,7 @@
 # SortingLab
 Experimental implementation of sorting algorithms and APIs. If proven to be useful they will be contributed back to Julia base or SortingAlgorithms.jl in time
 
-# Faster String Sort and Sortperm
+# Faster String Sort and Sortperm & CategoricalArrays Sort
 
 ## Usage
 ```julia
@@ -10,18 +10,32 @@ using SortingLab;
 N = 1_000_000;
 K = 100;
 
+# faster string sort
 svec = rand("id".*dec.(1:N÷K, 10), N);
 svec_sorted = radixsort(svec);
 issorted(svec_sorted) # true
 issorted(svec) # false
 
-# faster sortperm
+# faster string sortperm
 sorted_idx = fsortperm(svec)
 issorted(svec[sorted_idx])
 
-# in place sort
+# in place string sort
 radixsort!(svec);
 issorted(svec) # true
+
+# CategoricalArray sort
+usingCategoricalArrays
+pools = "id".*dec.(1:100,3);
+byvec = CategoricalArray{String, 1}(rand(UInt32(1):UInt32(length(pools)), 2^31-1), CategoricalPool(pools, false));
+byvec = compress(byvec);
+
+byvec_sorted = fsort(byvec);
+@test issorted(byvec_sorted)
+
+# in place CategoricalArray sort
+fsort!(byvec)
+@test issorted(byvec)
 ```
 
 ## Benchmark
