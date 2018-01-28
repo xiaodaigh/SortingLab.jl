@@ -8,9 +8,9 @@ K = 100
 using SortingLab, CategoricalArrays, Base.Test, BenchmarkTools
 pools = "id".*dec.(1:100,3);
 byvec = CategoricalArray{String, 1}(rand(UInt32(1):UInt32(length(pools)), N), CategoricalPool(pools, false));
+# @benchmark byvec_sorted = fsort($byvec)
 byvec = compress(byvec);
 
-# @benchmark byvec_sorted = fsort($byvec)
 byvec_sorted = fsort(byvec);
 @test issorted(byvec_sorted)
 
