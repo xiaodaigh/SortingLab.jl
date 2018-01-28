@@ -334,5 +334,7 @@ end
 
 Applies radix sort to the string vector, svec, and sort it in place.
 """
+fsort(svec::Vector{String}, rev = false, radix_opts = (16, 0xffff)) = radixsort(svec, rev , (16, 0xffff))
+fsort!(svec::Vector{String}, rev = false, radix_opts = (16, 0xffff)) = radixsort!(svec, rev , (16, 0xffff))
 radixsort(svec::Vector{String}, rev = false, radix_opts = (16, 0xffff)) = radixsort!(copy(svec), rev, radix_opts)
 radixsort!(svec::Vector{String}, rev = false, radix_opts = (16, 0xffff)) =  radixsort!(svec, 1, length(svec), rev ? Base.Reverse : Base.Forward, RADIX_SIZE = radix_opts[1], RADIX_MASK = radix_opts[2])
