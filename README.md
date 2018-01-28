@@ -25,7 +25,7 @@ issorted(svec) # true
 ```
 
 ## Benchmark
-![Base.sort vs SortingLab.radixsort](benchmarks/sort_vs_radixsort.png)
+![Base.sort vs SortingLab.radixsort](benchmarks/sort_vs_radixsort_1m.png)
 
 ## Benchmarking code
 ```julia
