@@ -1,20 +1,37 @@
 using SortingLab
 using Base.Test
 
-N = 1_000_000
+N = 100_000_000
 K = 100
 
 # categorical sort
-using SortingLab, CategoricalArrays, Base.Test, BenchmarkTools
+using CategoricalArrays, BenchmarkTools
 pools = "id".*dec.(1:100,3);
 byvec = CategoricalArray{String, 1}(rand(UInt32(1):UInt32(length(pools)), N), CategoricalPool(pools, false));
 # @benchmark byvec_sorted = fsort($byvec)
+# @benchmark byvec_sorted = fsort($byvec)
 byvec = compress(byvec);
+
+@benchmark fsort($byvec) samples = 50 seconds = 120
+# BenchmarkTools.Trial:
+#   memory estimate:  1002.61 KiB
+#   allocs estimate:  325
+#   --------------
+#   minimum time:     1.148 ms (0.00% GC)
+#   median time:      1.588 ms (0.00% GC)
+#   mean time:        1.829 ms (7.72% GC)
+#   maximum time:     9.459 ms (67.31% GC)
+#   --------------
+#   samples:          2724
+#   evals/sample:     1
+@benchmark SortingLab.fsort2($byvec) samples = 50 seconds = 120
 
 byvec_sorted = fsort(byvec);
 @test issorted(byvec_sorted)
 
-# @benchmark fsort!(byvec)
+issorted(vec)
+
+
 fsort!(byvec)
 @test issorted(byvec)
 

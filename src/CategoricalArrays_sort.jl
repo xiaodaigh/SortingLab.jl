@@ -19,3 +19,10 @@ end
 
 fsort(vec::CategoricalArray) = fsort!(copy(vec))
 
+
+function fsort2!(vec::CategoricalArray)
+    Base.Sort.sort_int_range!(vec.refs, length(vec.pool), 0)
+    vec
+end
+
+fsort2(vec::CategoricalArray) = fsort2!(copy(vec))
