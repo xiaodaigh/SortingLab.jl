@@ -1,8 +1,27 @@
 using SortingLab
-using Base.Test
+using Base.Test, BenchmarkTools
 
-N = 100_000_000
+N = 204900
 K = 100
+
+# test fsortperm
+a = rand(1:Int(N/K), N);
+ca = copy(a);
+
+@time ab = fsortperm(a, rev = true)
+@test ca == a
+@test issorted(a[ab], rev = true)
+
+@time ab = fsortperm(a);
+@test ca == a
+@test issorted(a[ab])
+
+a_2048 = rand(1:2048, N)
+@time ab = fsortperm(a_2048);
+@test issorted(a_2048[ab])
+
+@time ab = fsortperm(a_2048, rev = true);
+@test issorted(a_2048[ab], rev = true)
 
 # categorical sort
 using CategoricalArrays, BenchmarkTools
@@ -12,7 +31,7 @@ byvec = CategoricalArray{String, 1}(rand(UInt32(1):UInt32(length(pools)), N), Ca
 # @benchmark byvec_sorted = fsort($byvec)
 byvec = compress(byvec);
 
-@benchmark fsort($byvec) samples = 50 seconds = 120
+# @benchmark fsort($byvec) samples = 50 seconds = 120
 # BenchmarkTools.Trial:
 #   memory estimate:  1002.61 KiB
 #   allocs estimate:  325
@@ -24,17 +43,13 @@ byvec = compress(byvec);
 #   --------------
 #   samples:          2724
 #   evals/sample:     1
-@benchmark SortingLab.fsort2($byvec) samples = 50 seconds = 120
+# @benchmark SortingLab.fsort2($byvec) samples = 50 seconds = 120
 
 byvec_sorted = fsort(byvec);
 @test issorted(byvec_sorted)
 
-issorted(vec)
-
-
 fsort!(byvec)
 @test issorted(byvec)
-
 
 # String sort
 tic()

@@ -56,8 +56,6 @@ function radixsort(svec::AbstractVector{InternedString})
     # Base.unsafe_pointer_to_objref.(Ptr{UInt8}.(res) .- 8)
 end
 
-
-
 # this is slow due to string searchedsortedfirst not being very fast for strings
 # but would be good at some point in the future to test again once it is faster
 function radixsort1(svec::AbstractVector{InternedString})

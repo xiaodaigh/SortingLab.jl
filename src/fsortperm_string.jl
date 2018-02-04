@@ -31,7 +31,7 @@ end
 import SortingAlgorithms: uint_mapping
 import Base.Ordering
 # sorts vs using radix sort but skip the last few bits as defined by skipbits
-function sort32!(vs::AbstractVector{T}, lo::Int, hi::Int, o::Ordering, ts=similar(vs); skipbits = 32, RADIX_SIZE = 16, RADIX_MASK = 0xffff) where T
+function sort32!(vs::AbstractVector{T}, lo::Int=1, hi::Int=length(vs), o::Ordering=Base.Forward, ts=similar(vs); skipbits = 32, RADIX_SIZE = 11, RADIX_MASK = 0x000007ff) where T
     # Input checking
     if lo >= hi;  return vs;  end
 
