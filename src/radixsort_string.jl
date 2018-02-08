@@ -84,7 +84,7 @@ end
 Sort both the `vs` and reorder `index` at the same. This allows for faster sortperm
 for radix sort.
 """
-function sorttwo!(vs::Vector{T}, index, lo::Int = 1, hi::Int=length(vs), RADIX_SIZE = 16, RADIX_MASK = 0xffff) where T <:Union{BaseRadixSortSafeTypes,ShorterString,ShortString}
+function sorttwo!(vs::Vector{T}, index, lo::Int = 1, hi::Int=length(vs), RADIX_SIZE = 16, RADIX_MASK = 0xffff) where T <:Union{BaseRadixSortSafeTypes}
     # Input checking
     if lo >= hi;  return (vs, index);  end
 
