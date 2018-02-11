@@ -1,17 +1,34 @@
-function load_uint(s::String, skipbytes)
+using SortingAlgorithms
+import SortingAlgorithms: uint_mapping
+import Base.Ordering
+
+function load_uint(::Type{T}, s::String, skipbytes) where T <: Unsigned
     ss = sizeof(s)
     if skipbytes > ss
-        return UInt(0)
-    elseif skipbytes + 4 > ss
-        s1 = ((s |> pointer |> Ptr{UInt32}) + skipbytes) |> unsafe_load
-        s2 = Base.zext_int(UInt64, s1) |> ntoh 
-        extra_bits_to_shift = 8(skipbytes + 4 - ss)
-        return (s2 >> (32+extra_bits_to_shift)) << (32+extra_bits_to_shift)
+        return T(0)
+    elseif skipbytes + sizeof(T) > ss
+        s1 = ((s |> pointer |> Ptr{T}) + skipbytes) |> unsafe_load |> ntoh
+        extra_bits_to_shift = 8(skipbytes + sizeof(T) - ss)
+        return (s1 >> extra_bits_to_shift) << extra_bits_to_shift
     else
-        s1 = ((s |> pointer |> Ptr{UInt32}) + skipbytes) |> unsafe_load
-        return Base.zext_int(UInt64, s1) |> ntoh 
+        return s1 = ((s |> pointer |> Ptr{T}) + skipbytes) |> unsafe_load |> ntoh
     end
 end
+
+load_uint(s::String, skipbytes) = load_uint(UInt, s, skipbytes)
+
+function load_uint(sptr::Ptr{T}, ss, skipbytes) where T <: Unsigned
+    if skipbytes > ss
+        return T(0)
+    elseif skipbytes + sizeof(T) > ss
+        s1 = ((sptr |> Ptr{T}) + skipbytes) |> unsafe_load |> ntoh
+        extra_bits_to_shift = 8(skipbytes + sizeof(T) - ss)
+        return (s1 >> extra_bits_to_shift) << extra_bits_to_shift
+    else
+        return s1 = ((sptr |> Ptr{T}) + skipbytes) |> unsafe_load |> ntoh
+    end
+end
+
 
 # function load_uint_shift(s::String, skipbytes)
 #     s1 = ((((s |> pointer |> Ptr{UInt64}) + skipbytes) |> unsafe_load) << 32) >> 32
@@ -28,84 +45,115 @@ end
 # @time svec_sorted = radixsort(svec);
 # print(issorted(svec_sorted))
 
-import SortingAlgorithms: uint_mapping
-import Base.Ordering
-# sorts vs using radix sort but skip the last few bits as defined by skipbits
-function sort32!(vs::AbstractVector{T}, lo::Int=1, hi::Int=length(vs), o::Ordering=Base.Forward, ts=similar(vs); skipbits = 32, RADIX_SIZE = 11, RADIX_MASK = 0x000007ff) where T
-    # Input checking
-    if lo >= hi;  return vs;  end
-
-    # Make sure we're sorting a bits type
-    # T = Base.Order.ordtype(o, vs)
-
-    # Init
-    iters = ceil(Integer, sizeof(T)*8/RADIX_SIZE)
-    bin = zeros(UInt32, 2^RADIX_SIZE, iters)
-    if lo > 1;  bin[1,:] = lo-1;  end
-
-    # Histogram for each element, radix
-    for i = lo:hi
-        v = uint_mapping(o, vs[i])
-        for j = skipbits÷RADIX_SIZE+1:iters
-            idx = Int((v >> (j-1)*RADIX_SIZE) & RADIX_MASK) + 1
-            @inbounds bin[idx,j] += 1
-        end
-    end
-
-    # Sort!
-    swaps = 0
-    len = hi-lo+1
-    for j = skipbits÷RADIX_SIZE+1:iters
-        # Unroll first data iteration, check for degenerate case
-        v = uint_mapping(o, vs[hi])
-        idx = Int((v >> (j-1)*RADIX_SIZE) & RADIX_MASK) + 1
-
-        # are all values the same at this radix?
-        if bin[idx,j] == len;  continue;  end
-
-        cbin = cumsum(bin[:,j])
-        ci = cbin[idx]
-        ts[ci] = vs[hi]
-        cbin[idx] -= 1
-
-        # Finish the loop...
-        @inbounds for i in hi-1:-1:lo
-            v = uint_mapping(o, vs[i])
-            idx = Int((v >> (j-1)*RADIX_SIZE) & RADIX_MASK) + 1
-            ci = cbin[idx]
-            ts[ci] = vs[i]
-            cbin[idx] -= 1
-        end
-        vs,ts = ts,vs
-        swaps += 1
-    end
-
-    if isodd(swaps)
-        vs,ts = ts,vs
-        for i = lo:hi
-            vs[i] = ts[i]
-        end
-    end
-    vs
-end
-
 """
     fsortperm(svec)
 
 Faster sortperm for string vectors
 """
-function fsortperm(svec::AbstractVector{String})
+function fsortperm(svec::AbstractVector{String}, ::Type{T} = UInt) where T<:Unsigned
     strlen = maximum(sizeof, svec)
-    strlen = max(strlen-4, 0)
-    underly_bits = load_uint.(svec, strlen) .| collect(UInt32(1):UInt32(length(svec)))
-    underly_bits = sort32!(underly_bits, 1, length(underly_bits),  Base.Forward)
-    ss = (underly_bits .<< 32) .>> 32
- 
-    while strlen > 0
-        strlen = max(strlen-4, 0)
-        underly_bits = load_uint.(@view(svec[ss]), strlen) .| ss
-        underly_bits = sort32!(underly_bits, 1, length(underly_bits),  Base.Forward)
-        ss = (underly_bits .<< 32) .>> 32
+    strlen = max(strlen-sizeof(T), 0)
+
+    l = length(svec)
+
+    pairs = Vector{Tuple{T, UInt32}}(l)
+    for (i, svec1) = enumerate(svec)
+        pairs[i] = tuple(load_uint(T, svec1, strlen), i)
     end
-    return ss
+
+    sort!(pairs, by=x->x[1], alg = RadixSort)
+
+    while strlen > 0
+        strlen = max(strlen-sizeof(T), 0)
+
+        for (i, p) in enumerate(pairs)
+            p2 = p[2]
+            pairs[i] = tuple(load_uint(T, svec[p2], strlen), p2)
+        end
+
+        sort!(pairs, by=x->x[1], alg = RadixSort)
+    end
+    return [x[2] for x in pairs]
+end
+
+
+# function fsortperm3(svec::AbstractVector{String}, ::Type{T} = UInt) where T<:Unsigned
+#     strlen = maximum(sizeof, svec)
+#     strlen = max(strlen-sizeof(T), 0)
+
+#     l = length(svec)
+
+#     pairs = Vector{Pair{T, UInt32}}(l)
+#     for (i, svec1) = enumerate(svec)
+#         pairs[i] = Pair(load_uint(T, svec1, strlen), i)
+#     end
+
+#     sort!(pairs, by=x->x.first, alg = RadixSort)
+
+#     while strlen > 0
+#         strlen = max(strlen-4, 0)
+
+#         for (i, svec1) = enumerate(svec)
+#             pairs[i] = Pair(load_uint(T, svec1, strlen), pairs[2][2])
+#         end
+#         sort!(pairs, by=x->x.first, alg = RadixSort)
+#     end
+#     return [x.second for x in pairs]
+# end
+
+
+function testing()
+    using SortingAlgorithms, SortingLab, ShortStrings
+    import SortingLab: load_uint
+    ss = "id".*dec.(1:100,3);
+    svec = rand(ss, 100_000_000);
+    @time x = fsortperm(svec);
+    issorted(svec[x])
+
+    @time ssvec = ShorterString.(svec)
+    @time sort(ssvec, by = x->x.size_content, alg=RadixSort)
+    @time String.(ssvec)
+
+
+    ss = randstring.(rand(1:32,1_000_000))
+    svec = rand(ss, 1_000_000)
+    @time x = fsortperm(svec);
+    issorted(svec[x])
+
+
+    ss = "id".*dec.(1:1_000_000, 10)
+    svec = rand(ss, 100_000_000)
+    gc()
+    # gc_enable(false)
+    @time x = fsortperm(svec);
+    # gc_enable(true)
+    issorted(svec[x])
+
+    meh(s) = reinterpret(UInt, pointer(s))
+    meh2(s) = UInt(pointer(s))
+
+    @time meh.(svec)
+    @time pointer.(svec)
+    @time x = fsortperm(meh.(svec));
+    @time x = fsortperm(meh2.(svec));
+
+
+
+    @time x = fsortperm6(svec);
+    issorted(svec[x])
+
+    fff(svec) = sort(svec, by = hash, alg=RadixSort)
+    fff1(svec) = sort!(hash.(svec), alg=RadixSort)
+    @time fff1(svec);
+    @time fff(svec);
+
+    # @time x = fsortperm4(svec);
+    # issorted(svec[x])
+
+    # using RCall
+    # @rput svec
+    # R"""
+    # memory.limit(2^31-1)
+    # system.time(sort(svec, method="radix"))
+    # """
 end

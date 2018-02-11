@@ -187,26 +187,45 @@ end
 # based on sortperm_int_range_p1
 # see https://discourse.julialang.org/t/ironic-observation-about-sort-and-sortperm-speed-for-small-intergers-vs-r/8715/31?u=xiaodai
 ################################################################################
-function fsortperm_int_range_lsd(a, rangelen, minval, RADIX_SIZE; rev = false)
+function fsortperm_int_range_lsd(a::Vector{T}, rangelen, minval, RADIX_SIZE; rev = false) where T
     # println(RADIX_SIZE," ", now())
     # @assert 2^32 > rangelen
     # @assert 2^32 >= length(a)
-    vs::VTV = Vector{VT}(length(a))
+    vs = Vector{Pair{UInt32, T}}(length(a))
     if rev
         maxval = maximum(a)
         @inbounds for i in eachindex(a)
-            vs[i] = Pair(UInt32(i),UInt32(maxval - a[i]))
+            vs[i] = Pair(UInt32(i), maxval - a[i])
         end
     else
         @inbounds for i in eachindex(a)
-            vs[i] = Pair(UInt32(i),UInt32(a[i] - minval))
+            vs[i] = Pair(UInt32(i), a[i] - minval)
         end
     end
     # @time @inbounds vs = [Pair(UInt32(i),UInt32(ai)) for (i, ai) in enumerate(a)]
-    _fsortperm_int_range_lsd!(vs, rangelen, 0, RADIX_SIZE)
+    sorttwo!(vs, rangelen, 0, RADIX_SIZE)
+    [Int(vs1.first) for vs1 in vs]
 end
 
-function _fsortperm_int_range_lsd!(vs, rangelen, minval, RADIX_SIZE)
+function fsortandperm_int_range_lsd(a::Vector{T}, rangelen, minval, RADIX_SIZE; rev = false) where T
+    vs = Vector{Pair{UInt32, T}}(length(a))
+    if rev
+        maxval = maximum(a)
+        @inbounds for i in eachindex(a)
+            vs[i] = Pair(UInt32(i), maxval - a[i])
+        end
+    else
+        @inbounds for i in eachindex(a)
+            vs[i] = Pair(UInt32(i), a[i] - minval)
+        end
+    end
+    
+    sorttwo!(vs, rangelen, 0, RADIX_SIZE)
+end
+
+
+# this does the actual work of sorting
+function sorttwo!(vs, rangelen::T, minval::S, RADIX_SIZE) where {T <: Integer, S <: Integer}
     RADIX_MASK = UInt32(1<<RADIX_SIZE-1)
     ts = similar(vs)
 
@@ -256,16 +275,12 @@ function _fsortperm_int_range_lsd!(vs, rangelen, minval, RADIX_SIZE)
         swaps += 1
     end
 
-    # if isodd(swaps)
-    #     vs,ts = ts,vs
-    #     @inbounds for i = lo:hi
-    #         vs[i] = ts[i]
-    #     end
-    # end
-    res = Vector{Int}(length(vs))
-    @inbounds for i in eachindex(vs)
-        res[i] = Int(vs[i].first)
+    if isodd(swaps)
+        vs,ts = ts,vs
+        @inbounds for i = lo:hi
+            vs[i] = ts[i]
+        end
     end
-    res
-    # [Int(vs1.first) for vs1 in vs]
+
+    vs
 end

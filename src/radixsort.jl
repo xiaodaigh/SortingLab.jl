@@ -1,4 +1,4 @@
-function fsort!(vs::Vector{T}, lo::Int = 1, hi::Int=length(vs); RADIX_SIZE = 11, RADIX_MASK::UInt32 = 0x07ff) where T <:Union{BaseRadixSortSafeTypes, ShorterString, ShortString}
+function fsort!(vs::Vector{T}, lo::Int = 1, hi::Int=length(vs); RADIX_SIZE = 11, RADIX_MASK::UInt32 = 0x07ff) where T <:Union{BaseRadixSortSafeTypes}
     # Input checking
     if lo >= hi;  return vs;  end
 

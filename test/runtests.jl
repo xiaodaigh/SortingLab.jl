@@ -1,5 +1,6 @@
 using SortingLab
-using Base.Test, BenchmarkTools
+using Base.Test
+using CategoricalArrays
 
 N = 204900
 K = 100
@@ -24,7 +25,7 @@ a_2048 = rand(1:2048, N)
 @test issorted(a_2048[ab], rev = true)
 
 # categorical sort
-using CategoricalArrays, BenchmarkTools
+
 pools = "id".*dec.(1:100,3);
 byvec = CategoricalArray{String, 1}(rand(UInt32(1):UInt32(length(pools)), N), CategoricalPool(pools, false));
 # @benchmark byvec_sorted = fsort($byvec)

@@ -4,7 +4,7 @@ module SortingLab
 # export sort, sort!
 # package code goes here
 
-using InternedStrings, StatsBase, CategoricalArrays, ShortStrings
+using InternedStrings, StatsBase, CategoricalArrays
 
 export fsortperm, radixsort, radixsort!, fsort, fsort!
 
