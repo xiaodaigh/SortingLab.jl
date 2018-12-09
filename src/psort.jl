@@ -1,5 +1,3 @@
-using Base.Threads
-using SortingAlgorithms
 function blockranges(nblocks, total_len)
     rem = total_len % nblocks
     main_len = div(total_len, nblocks)

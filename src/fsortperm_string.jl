@@ -1,4 +1,3 @@
-using SortingAlgorithms
 import SortingAlgorithms: uint_mapping
 import Base.Ordering
 
@@ -100,60 +99,3 @@ end
 #     end
 #     return [x.second for x in pairs]
 # end
-
-
-function testing()
-    using SortingAlgorithms, SortingLab, ShortStrings
-    import SortingLab: load_uint
-    ss = "id".*dec.(1:100,3);
-    svec = rand(ss, 100_000_000);
-    @time x = fsortperm(svec);
-    issorted(svec[x])
-
-    @time ssvec = ShorterString.(svec)
-    @time sort(ssvec, by = x->x.size_content, alg=RadixSort)
-    @time String.(ssvec)
-
-
-    ss = randstring.(rand(1:32,1_000_000))
-    svec = rand(ss, 1_000_000)
-    @time x = fsortperm(svec);
-    issorted(svec[x])
-
-
-    ss = "id".*dec.(1:1_000_000, 10)
-    svec = rand(ss, 100_000_000)
-    gc()
-    # gc_enable(false)
-    @time x = fsortperm(svec);
-    # gc_enable(true)
-    issorted(svec[x])
-
-    meh(s) = reinterpret(UInt, pointer(s))
-    meh2(s) = UInt(pointer(s))
-
-    @time meh.(svec)
-    @time pointer.(svec)
-    @time x = fsortperm(meh.(svec));
-    @time x = fsortperm(meh2.(svec));
-
-
-
-    @time x = fsortperm6(svec);
-    issorted(svec[x])
-
-    fff(svec) = sort(svec, by = hash, alg=RadixSort)
-    fff1(svec) = sort!(hash.(svec), alg=RadixSort)
-    @time fff1(svec);
-    @time fff(svec);
-
-    # @time x = fsortperm4(svec);
-    # issorted(svec[x])
-
-    # using RCall
-    # @rput svec
-    # R"""
-    # memory.limit(2^31-1)
-    # system.time(sort(svec, method="radix"))
-    # """
-end

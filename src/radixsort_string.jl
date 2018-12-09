@@ -1,6 +1,6 @@
-using Base.Threads
+#using Base.Threads
 import StatsBase: BaseRadixSortSafeTypes
-import Base: Forward, ForwardOrdering, Reverse, ReverseOrdering, sortperm, Ordering, 
+import Base: Forward, ForwardOrdering, Reverse, ReverseOrdering, sortperm, Ordering,
             setindex!, getindex, similar, sort!, Reverse
 
 # create bits types for easy loading of bytes of lengths up to 15
@@ -44,10 +44,10 @@ function sort_spointer!(svec::Vector{String}, lo::Int, hi::Int, o::O) where O <:
     # the length subarray to sort
     l = hi - lo + 1
 
-    # find the maximum string length    
+    # find the maximum string length
     lens = maximum(sizeof, svec)
     skipbytes = lens
-    # ptrs = pointer.(svec)
+    
     if lens > 0
         while lens > 4
             skipbytes = max(0, skipbytes - 8)
@@ -94,7 +94,7 @@ function sorttwo!(vs::Vector{T}, index, lo::Int = 1, hi::Int=length(vs), RADIX_S
     iters = ceil(Integer, sizeof(T)*8/RADIX_SIZE)
     # number of buckets in the counting step
     nbuckets = 2^RADIX_SIZE
-    
+
     # Histogram for each element, radix
     bin = uint_hist(vs, RADIX_SIZE, RADIX_MASK)
 
@@ -195,7 +195,7 @@ function load_bits_with_padding(::Type{UInt128}, ptrs::Ptr{UInt8}, remaining_byt
         end
     else
         return ntoh(unsafe_load(Ptr{UInt128}(ptrs))) >> nbits_to_shift_away << nbits_to_shift_away
-    end 
+    end
 end
 
 function load_bits_with_padding(::Type{UInt64}, ptrs::Ptr{UInt8}, remaining_bytes_to_load)::UInt64
@@ -222,7 +222,7 @@ function load_bits_with_padding(::Type{UInt64}, ptrs::Ptr{UInt8}, remaining_byte
         end
     else
         return ntoh(unsafe_load(Ptr{UInt64}(ptrs))) >> nbits_to_shift_away << nbits_to_shift_away
-    end 
+    end
 end
 
 function load_bits_with_padding(::Type{UInt32}, ptrs::Ptr{UInt8}, remaining_bytes_to_load)::UInt32
@@ -241,7 +241,7 @@ function load_bits_with_padding(::Type{UInt32}, ptrs::Ptr{UInt8}, remaining_byte
         end
     else
         return ntoh(unsafe_load(Ptr{UInt32}(ptrs))) >> nbits_to_shift_away << nbits_to_shift_away
-    end 
+    end
 end
 
 """
@@ -285,7 +285,7 @@ function radixsort!(svec::AbstractVector{String}, lo::Int, hi::Int, o::O; RADIX_
     # the length subarray to sort
     l = hi - lo + 1
 
-    # find the maximum string length    
+    # find the maximum string length
     lens = maximum(sizeof, svec)
     skipbytes = lens
     if lens > 0

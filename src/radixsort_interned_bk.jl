@@ -1,5 +1,3 @@
-ptrs(s::InternedString) = pointer(s.value)
-
 # the fast radixsort for internedstrings
 function radixsort(svec::AbstractVector{InternedString})
     l = length(InternedStrings.pool)
@@ -10,9 +8,9 @@ function radixsort(svec::AbstractVector{InternedString})
     sort!(pointer_pool)
 
     # get the pointer to the InternedStrings and sort them as well
-    pointer_svec = UInt.(ptrs.(svec))
+    pointer_svec = UInt.(pointer.(svec))
     sort!(pointer_svec)
-    
+
     # now both pointer to svec and pointer to pointer to pool arr
     cnts = zeros(UInt32, l)
     last_ps = pointer_svec[1]
@@ -50,7 +48,7 @@ function radixsort(svec::AbstractVector{InternedString})
     # cnts .= cnts[indexes]
     # pstr .= pstr[indexes]
     # pstr, cnts
-     
+
     # bad combination
     # res = StatsBase.inverse_rle(@view(pointer_pool[indexes]), @view(cnts[indexes]))
     # Base.unsafe_pointer_to_objref.(Ptr{UInt8}.(res) .- 8)
