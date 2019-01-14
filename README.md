@@ -11,7 +11,7 @@ N = 1_000_000;
 K = 100;
 
 # faster string sort
-svec = rand("id".*dec.(1:N÷K, 10), N);
+svec = rand("id".*string.(1:N÷K, pad=10), N);
 svec_sorted = radixsort(svec);
 issorted(svec_sorted) # true
 issorted(svec) # false
@@ -26,7 +26,7 @@ issorted(svec) # true
 
 # CategoricalArray sort
 using CategoricalArrays
-pools = "id".*dec.(1:100,3);
+pools = "id".*string.(1:100,3);
 byvec = CategoricalArray{String, 1}(rand(UInt32(1):UInt32(length(pools)), 2^31-1), CategoricalPool(pools, false));
 byvec = compress(byvec);
 
@@ -50,7 +50,7 @@ N = 1_000_000;
 K = 100;
 
 tic()
-svec = rand("id".*dec.(1:N÷K, 10), N);
+svec = rand("id".*string.(1:N÷K, pad=10), N);
 sort_id_1m = @belapsed sort($svec);
 radixsort_id_1m = @belapsed radixsort($svec);
 
@@ -69,8 +69,8 @@ tic()
 using Plots
 using StatPlots
 groupedbar(
-    repeat(["IDs", "random len 32"], inner=4), 
-    [sort_id_1m, radixsort_id_1m, sortperm_id_1m, fsortperm_id_1m, sort_r_1m, radixsort_r_1m, sortperm_r_1m, fsortperm_r_1m], 
+    repeat(["IDs", "random len 32"], inner=4),
+    [sort_id_1m, radixsort_id_1m, sortperm_id_1m, fsortperm_id_1m, sort_r_1m, radixsort_r_1m, sortperm_r_1m, fsortperm_r_1m],
     group = repeat(["sort","radixsort", "sortperm", "fsortperm"], outer = 2),
     title = "Strings sorting perf (1m): Base.sort vs SortingLab.radixsort")
 savefig("benchmarks/sort_vs_radixsort.png")
