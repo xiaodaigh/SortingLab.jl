@@ -1,4 +1,4 @@
-import SortingAlgorithms: uint_mapping
+import SortingAlgorithms: uint_mapping, RadixSort
 import Base.Ordering
 
 function load_uint(::Type{T}, s::String, skipbytes) where T <: Unsigned
@@ -55,7 +55,7 @@ function fsortperm(svec::AbstractVector{String}, ::Type{T} = UInt) where T<:Unsi
 
     l = length(svec)
 
-    pairs = Vector{Tuple{T, UInt32}}(l)
+    pairs = Vector{Tuple{T, UInt32}}(undef, l)
     for (i, svec1) = enumerate(svec)
         pairs[i] = tuple(load_uint(T, svec1, strlen), i)
     end
