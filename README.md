@@ -41,7 +41,9 @@ fsort!(byvec)
 ```
 
 ## Benchmark
-![Base.sort vs SortingLab.radixsort](benchmarks/sort_vs_radixsort_1m.png)
+![Base.sort vs SortingLab.radixsort](benchmarks/sort_vs_radixsort.png)
+
+![Base.sort vs SortingLab.radixsort](benchmarks/sortperm_vs_fsortperm.png)
 
 ## Benchmarking code
 ```julia
