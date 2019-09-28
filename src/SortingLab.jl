@@ -19,5 +19,6 @@ include("fsortperm_string.jl")
 include("fsortperm_Integer.jl")
 include("radixsort.jl")
 include("fsort_CategoricalArrays.jl")
+include("radixsort-StrFs.jl")
 # include("../benchmarks/is_parallel_hist_faster_YES.jl")
 end # module

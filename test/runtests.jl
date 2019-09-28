@@ -1,6 +1,8 @@
 using SortingLab
-using Base.Test
+using Test
 using CategoricalArrays
+using DataFrames, Random
+using StrFs, SortingAlgorithms
 
 N = 204900
 K = 100
@@ -54,7 +56,7 @@ fsort!(byvec)
 
 # String sort
 tic()
-# const M=1000; const K=100; 
+# const M=1000; const K=100;
 svec1 = rand([Base.randstring(rand(1:4)) for k in 1:N÷K], N);
 @time res1 = radixsort(svec1)
 @test issorted(res1)
@@ -101,3 +103,17 @@ svec1 = rand([string(rand(Char.(32:126), rand(1:32))...) for k in 1:N÷K], N);
 @time radixsort!(svec1);
 @test issorted(svec1)
 toc()
+
+
+
+@time a = rand([randstring(rand(0:16)) for i in 1:100_000], 10_000_000);
+
+@time as = StrF{16}.(a);
+
+@time sort(as, alg=RadixSort) |> issorted
+
+@time asb = radixsort(as, rev=true)
+@test issorted(asb, rev=true)
+
+@time asb = radixsort(as)
+@test issorted(asb)
