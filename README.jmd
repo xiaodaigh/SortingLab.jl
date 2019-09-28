@@ -1,3 +1,11 @@
+---
+title : SortingLab README
+author : Dai ZJ
+date: 2019--09-28
+options:
+  out_path : README.MD
+  doctype :  github
+---
 # SortingLab
 Experimental implementation of sorting algorithms and APIs. If proven to be useful they will be contributed back to Julia base or SortingAlgorithms.jl in time
 
@@ -12,7 +20,7 @@ The main functions exported by SortingLab is
 
 
 ## Usage
-````julia
+```julia
 using SortingLab;
 using Test
 N = 1_000_000;
@@ -21,16 +29,9 @@ K = 100;
 svec = rand("id".*string.(1:N÷K, pad=10), N);
 svec_sorted = radixsort(svec);
 issorted(svec_sorted), issorted(svec) # true, false
-````
+```
 
-
-````
-(true, false)
-````
-
-
-
-````julia
+```julia
 # faster string sortperm
 sorted_idx = fsortperm(svec)
 issorted(svec[sorted_idx]) #true
@@ -38,16 +39,9 @@ issorted(svec[sorted_idx]) #true
 # in place string sort
 radixsort!(svec);
 issorted(svec) # true
-````
+```
 
-
-````
-true
-````
-
-
-
-````julia
+```julia
 # CategoricalArray sort
 using CategoricalArrays
 pools = "id".*string.(1:100,3);
@@ -56,29 +50,14 @@ byvec = compress(byvec);
 
 byvec_sorted = fsort(byvec);
 @test issorted(byvec_sorted)
-````
+```
 
 
-````
-Test Passed
-````
-
-
-
-````julia
+```julia
 # in place CategoricalArray sort
 fsort!(byvec)
 @test issorted(byvec)
-````
-
-
-````
-Test Passed
-````
-
-
-
-
+```
 
 ## Benchmark
 ![Base.sort vs SortingLab.radixsort](benchmarks/sort_vs_radixsort.png)
@@ -86,8 +65,7 @@ Test Passed
 ![Base.sort vs SortingLab.radixsort](benchmarks/sortperm_vs_fsortperm.png)
 
 ## Benchmarking code
-````julia
-
+```julia; eval=false
 using SortingLab;
 using BenchmarkTools;
 import Random: randstring
@@ -124,10 +102,7 @@ groupedbar(
     group = repeat(["Base.sortperm","SortingLab.fsortperm"], outer = 2),
     title = "Strings sortperm (1m rows): Base vs SortingLab")
 savefig("benchmarks/sortperm_vs_fsortperm.png")
-````
-
-
-
+```
 
 
 # Build status

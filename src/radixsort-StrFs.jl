@@ -22,3 +22,11 @@ radixsort(v::Vector{StrF{S}}; rev = false) where S = begin
         throw(ErrorException("radix sort of Vector{StrF(S)} is only possible for S <= 16 for now"))
     end
 end
+
+radixsort!(v::Vector{StrF{S}}; rev = false) where S = begin
+    if S <=16
+        return sort!(v, alg = RadixSort, rev = rev)
+    else
+        throw(ErrorException("radix sort of Vector{StrF(S)} is only possible for S <= 16 for now"))
+    end
+end
