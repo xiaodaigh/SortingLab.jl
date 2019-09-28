@@ -3,6 +3,8 @@ import StatsBase: BaseRadixSortSafeTypes
 import Base: Forward, ForwardOrdering, Reverse, ReverseOrdering, sortperm, Ordering,
             setindex!, getindex, similar, sort!, Reverse
 
+import Base.Threads: nthreads, threadid
+
 # create bits types for easy loading of bytes of lengths up to 15
 primitive type Bits24 24 end
 primitive type Bits40 40 end
@@ -23,19 +25,23 @@ Computes a histogram (counts) for the vector RADIX_SIZE bits at a time. E.g. if 
 then 4 histograms are created for each of the 16 bit chunks.
 """
 function uint_hist(bits::Vector{T}, RADIX_SIZE = 16, RADIX_MASK = 0xffff) where T
+    #println("hello")
     iter = ceil(Integer, sizeof(T)*8/RADIX_SIZE)
-    hist = zeros(UInt32, 2^RADIX_SIZE, iter, nthreads())
-    @threads for j = 1:length(bits)
+    #hist = zeros(UInt32, 2^RADIX_SIZE, iter, nthreads())
+    hist = zeros(UInt32, 2^RADIX_SIZE, iter)
+    #@threads for j = 1:length(bits)
+    for j = 1:length(bits)
         for i = 0:iter-1
-            @inbounds hist[1+Int((bits[j] >> (i * RADIX_SIZE)) & RADIX_MASK), i+1, threadid()] += 1
+            @inbounds hist[1+Int((bits[j] >> (i * RADIX_SIZE)) & RADIX_MASK), i+1] += 1
         end
     end
-    @threads for j in 1:iter
-        for i = 2:nthreads()
-            @inbounds hist[:, j, 1] .+= hist[:, j, i]
-        end
-    end
-    hist[:,:,1]
+    #@threads for j in 1:iter
+    # for j in 1:iter
+    #     for i = 2:nthreads()
+    #         @inbounds hist[:, j, 1] .+= hist[:, j, i]
+    #     end
+    # end
+    hist
 end
 
 # sort it by using sorttwo! on the pointer
@@ -47,7 +53,7 @@ function sort_spointer!(svec::Vector{String}, lo::Int, hi::Int, o::O) where O <:
     # find the maximum string length
     lens = maximum(sizeof, svec)
     skipbytes = lens
-    
+
     if lens > 0
         while lens > 4
             skipbytes = max(0, skipbytes - 8)
@@ -87,7 +93,7 @@ for radix sort.
 function sorttwo!(vs::Vector{T}, index, lo::Int = 1, hi::Int=length(vs), RADIX_SIZE = 16, RADIX_MASK = 0xffff) where T <:Union{BaseRadixSortSafeTypes}
     # Input checking
     if lo >= hi;  return (vs, index);  end
-
+    #println(vs)
     o = Forward
 
     # Init
@@ -110,7 +116,7 @@ function sorttwo!(vs::Vector{T}, index, lo::Int = 1, hi::Int=length(vs), RADIX_S
     for j = 1:iters
         # Unroll first data iteration, check for degenerate case
         v = uint_mapping(o, vs[hi])
-        idx = Int((v >> (j-1)*RADIX_SIZE) & RADIX_MASK) + 1
+        idx = Int((v >> ((j-1)*RADIX_SIZE)) & RADIX_MASK) + 1
 
         # are all values the same at this radix?
         if bin[idx,j] == len;  continue;  end
@@ -124,15 +130,19 @@ function sorttwo!(vs::Vector{T}, index, lo::Int = 1, hi::Int=length(vs), RADIX_S
         end
 
         ci = cbin[idx]
+        #println((ci, hi))
         ts[ci] = vs[hi]
         index1[ci] = index[hi]
+        # println(cbin[idx])
         cbin[idx] -= 1
 
         # Finish the loop...
-        @inbounds for i in hi-1:-1:lo
+        #@inbounds
+        for i in hi-1:-1:lo
             v = uint_mapping(o, vs[i])
-            idx = Int((v >> (j-1)*RADIX_SIZE) & RADIX_MASK) + 1
+            idx = Int((v >> ((j-1)*RADIX_SIZE)) & RADIX_MASK) + 1
             ci = cbin[idx]
+            #println(ci)
             ts[ci] = vs[i]
             index1[ci] = index[i]
             cbin[idx] -= 1

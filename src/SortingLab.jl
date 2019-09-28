@@ -7,9 +7,9 @@ module SortingLab
 #using InternedStrings, StatsBase, CategoricalArrays
 
 import InternedStrings
-import StatsBase
+import StatsBase: countmap
 import CategoricalArrays: CategoricalArray
-import SortingAlgorithms
+import SortingAlgorithms: uint_mapping
 import Base.Threads: @threads
 
 export fsortperm, radixsort, radixsort!, fsort, fsort!
