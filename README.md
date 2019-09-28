@@ -5,13 +5,6 @@ Experimental implementation of sorting algorithms and APIs. If proven to be usef
 
 ## Usage
 ```julia
-using SortingLab;
-import Test: @test
-
-N = 1_000_000;
-K = 100;
-
-# faster string sort
 svec = rand("id".*string.(1:N÷K, pad=10), N);
 svec_sorted = radixsort(svec);
 issorted(svec_sorted) # true
@@ -37,7 +30,6 @@ byvec_sorted = fsort(byvec);
 # in place CategoricalArray sort
 fsort!(byvec)
 @test issorted(byvec)
-
 ```
 
 ## Benchmark
@@ -54,7 +46,6 @@ import Random: randstring
 N = 1_000_000;
 K = 100;
 
-tic()
 svec = rand("id".*string.(1:N÷K, pad=10), N);
 sort_id_1m = @belapsed sort($svec);
 radixsort_id_1m = @belapsed radixsort($svec);
@@ -68,9 +59,7 @@ radixsort_r_1m = @belapsed radixsort($rsvec);
 
 sortperm_r_1m = @belapsed sortperm($rsvec);
 fsortperm_r_1m = @belapsed fsortperm($rsvec);
-toc()
 
-tic()
 using Plots
 using StatPlots
 groupedbar(
@@ -86,7 +75,6 @@ groupedbar(
     group = repeat(["Base.sortperm","SortingLab.fsortperm"], outer = 2),
     title = "Strings sortperm (1m rows): Base vs SortingLab")
 savefig("benchmarks/sortperm_vs_fsortperm.png")
-toc()
 ```
 
 
