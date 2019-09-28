@@ -61,7 +61,7 @@ sortperm_r_1m = @belapsed sortperm($rsvec);
 fsortperm_r_1m = @belapsed fsortperm($rsvec);
 
 using Plots
-using StatPlots
+using StatsPlots
 groupedbar(
     repeat(["IDs", "Random len 32"], inner=2),
     [sort_id_1m, radixsort_id_1m, sort_r_1m, radixsort_r_1m],
