@@ -3,6 +3,14 @@ Experimental implementation of sorting algorithms and APIs. If proven to be usef
 
 # Faster String Sort and Sortperm & CategoricalArrays Sort
 
+The main functions exported by SortingLab is 
+
+| Function | Type | Description |
+| -- | -- | -- |
+| `radixsort`, `radixsort!` | String, [StrFs](https://github.com/tpapp/StrFs.jl) | Implements the radix sort algorithm for Strings, and [StrFs](https://github.com/tpapp/StrFs.jl)(up to `sizeof` 16 for now). |
+| `fsort`, `fsort!` | CategoricalArrays | Implements the counting sort algorithm  |
+
+
 ## Usage
 ```julia
 svec = rand("id".*string.(1:N÷K, pad=10), N);
