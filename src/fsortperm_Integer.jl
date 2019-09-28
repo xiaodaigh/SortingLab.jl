@@ -58,7 +58,7 @@ function _fsortperm_msd_hybrid(vs, lo, hi, rangelen, minval, RADIX_SIZE, iters, 
     end
 
     RADIX_MASK = UInt32(1<<RADIX_SIZE-1)
-    
+
     # Init
     bin = zeros(UInt32, 2^RADIX_SIZE)
 
@@ -79,7 +79,7 @@ function _fsortperm_msd_hybrid(vs, lo, hi, rangelen, minval, RADIX_SIZE, iters, 
     # if bin[idx,iters] == len;  continue;  end
     if bin[idx] == len
         if iters == 1
-            return [Int(vsi.first) for vsi in vs[lo:hi]] 
+            return [Int(vsi.first) for vsi in vs[lo:hi]]
         else
             return _fsortperm_msd_hybrid(vs, lo, hi, rangelen, minval, RADIX_SIZE, iters-1, ts, counting_sort_cutoff = counting_sort_cutoff)
         end
@@ -89,7 +89,7 @@ function _fsortperm_msd_hybrid(vs, lo, hi, rangelen, minval, RADIX_SIZE, iters, 
     cbin  = copy(bin)
     cumsum!(bin, bin)
     cumsumbin = copy(bin)
-    
+
     # copy the elements to the temporary array first
     @inbounds for i in lo:hi
         ts[i] = vs[i]
@@ -103,7 +103,7 @@ function _fsortperm_msd_hybrid(vs, lo, hi, rangelen, minval, RADIX_SIZE, iters, 
         vs[lo - 1 + ci] = ts[i]
         bin[idx] -= 1
     end
-    
+
     if iters == 1
         return [Int(vsi.first) for vsi in vs[lo:hi]]
     end
@@ -191,7 +191,8 @@ function fsortperm_int_range_lsd(a::Vector{T}, rangelen, minval, RADIX_SIZE; rev
     # println(RADIX_SIZE," ", now())
     # @assert 2^32 > rangelen
     # @assert 2^32 >= length(a)
-    vs = Vector{Pair{UInt32, T}}(length(a))
+    
+    vs = Vector{Pair{UInt32, T}}(undef, length(a))
     if rev
         maxval = maximum(a)
         @inbounds for i in eachindex(a)
@@ -219,7 +220,7 @@ function fsortandperm_int_range_lsd(a::Vector{T}, rangelen, minval, RADIX_SIZE; 
             vs[i] = Pair(UInt32(i), a[i] - minval)
         end
     end
-    
+
     sorttwo!(vs, rangelen, 0, RADIX_SIZE)
 end
 
@@ -233,7 +234,7 @@ function sorttwo!(vs, rangelen::T, minval::S, RADIX_SIZE) where {T <: Integer, S
     lo = 1
     hi = length(vs)
     iters = Int(ceil(log(2, rangelen)/RADIX_SIZE))
-    
+
     # println("iters: $iters")
     # @assert iters <= ceil(Integer, sizeof(typeof(vs[1].second))*8/RADIX_SIZE)
     bin = zeros(UInt32, 2^RADIX_SIZE, iters)
