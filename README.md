@@ -7,7 +7,7 @@ The main functions exported by SortingLab is
 
 | Function | Type | Description |
 | -- | -- | -- |
-| `radixsort`, `radixsort!` | String, [StrFs](https://github.com/tpapp/StrFs.jl) | Implements the radix sort algorithm for Strings, and [StrFs](https://github.com/tpapp/StrFs.jl)(up to `sizeof` 16 for now). |
+| `radixsort`, `radixsort!` | String, [StrF](https://github.com/tpapp/StrFs.jl) | Implements the radix sort algorithm for Strings, and [StrFs](https://github.com/tpapp/StrFs.jl) (up to `sizeof` 16 for now). |
 | `fsort`, `fsort!` | CategoricalArrays | Implements the counting sort algorithm  |
 
 
