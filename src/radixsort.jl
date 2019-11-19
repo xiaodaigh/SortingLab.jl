@@ -1,4 +1,18 @@
-function fsort!(vs::Vector{T}, lo::Int = 1, hi::Int=length(vs); RADIX_SIZE = 11, RADIX_MASK::UInt32 = 0x07ff) where T <:Union{BaseRadixSortSafeTypes}
+using TraitWrappers
+
+abstract type SortAlgTraitWrapper <: AbstractTraitWrapper end
+
+struct RadixSortableTraitWrapper{T} <: AbstractTraitWrapper
+
+end
+
+RadixSortableTraitWrapper(vs::) where T <: BaseRadixSortSafeTypes = RadixSortableTraitWrapper()
+
+function fsort!(vs::Vector{T}; kwargs...}
+    fsort!(uint_mapping, vs; kwargs...)
+end
+
+function fsort!(uint_mapping, vs::Vector{T}; lo::Int = 1, hi::Int=length(vs) RADIX_SIZE = 11, RADIX_MASK::UInt32 = 0x07ff) where T <:Union{BaseRadixSortSafeTypes}
     # Input checking
     if lo >= hi;  return vs;  end
 
@@ -8,7 +22,7 @@ function fsort!(vs::Vector{T}, lo::Int = 1, hi::Int=length(vs); RADIX_SIZE = 11,
     iters = ceil(Integer, sizeof(T)*8/RADIX_SIZE)
     # number of buckets in the counting step
     nbuckets = 2^RADIX_SIZE
-    
+
     # Histogram for each element, radix
     bin = uint_hist(vs, RADIX_SIZE, RADIX_MASK)
 
@@ -54,7 +68,7 @@ function fsort!(vs::Vector{T}, lo::Int = 1, hi::Int=length(vs); RADIX_SIZE = 11,
 
     if isodd(swaps)
         vs,ts = ts,vs
-        
+
         for i = lo:hi
             @inbounds vs[i] = ts[i]
         end
@@ -62,4 +76,4 @@ function fsort!(vs::Vector{T}, lo::Int = 1, hi::Int=length(vs); RADIX_SIZE = 11,
     vs
 end
 
-fsort(vs, radix_opts = (11, 0x07ff)) = fsort!(copy(vs), RADIX_SIZE = radix_opts[1], RADIX_MASK = radix_opts[2])
+fsort(vs; kwargs...) = fsort!(copy(vs), RADIX_SIZE = radix_opts[1], RADIX_MASK = radix_opts[2])

@@ -8,23 +8,23 @@ N = 204900
 K = 100
 
 # test fsortperm
-# a = rand(1:Int(N/K), N);
-# ca = copy(a);
+a = rand(1:Int(N/K), N);
+ca = copy(a);
 #
-# @time ab = fsortperm(a, rev = true)
-# @test ca == a
-# @test issorted(a[ab], rev = true)
+@time ab = fsortperm(a, rev = true)
+@test ca == a
+@test issorted(a[ab], rev = true)
 #
-# @time ab = fsortperm(a);
-# @test ca == a
-# @test issorted(a[ab])
-#
-# a_2048 = rand(1:2048, N)
-# @time ab = fsortperm(a_2048);
-# @test issorted(a_2048[ab])
-#
-# @time ab = fsortperm(a_2048, rev = true);
-# @test issorted(a_2048[ab], rev = true)
+@time ab = fsortperm(a);
+@test ca == a
+@test issorted(a[ab])
+
+a_2048 = rand(1:2048, N)
+@time ab = fsortperm(a_2048);
+@test issorted(a_2048[ab])
+
+@time ab = fsortperm(a_2048, rev = true);
+@test issorted(a_2048[ab], rev = true)
 
 # categorical sort
 

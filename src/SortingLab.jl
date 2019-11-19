@@ -14,6 +14,7 @@ import Base.Threads: @threads
 
 export fsortperm, radixsort, radixsort!, fsort, fsort!
 
+fsortperm(x) = sortperm(x, alg = RadixSort)
 include("radixsort_string.jl")
 include("fsortperm_string.jl")
 include("fsortperm_Integer.jl")
