@@ -2,10 +2,13 @@ using SortingLab
 using Test
 using CategoricalArrays
 using DataFrames, Random
-using StrFs, SortingAlgorithms
+using SortingAlgorithms
+
 
 N = 204900
 K = 100
+
+include("fsort.jl")
 
 # test fsortperm
 # a = rand(1:Int(N/K), N);
@@ -102,18 +105,3 @@ svec1 = rand([string(rand(Char.(32:126), rand(1:24))...) for k in 1:N÷K], N);
 svec1 = rand([string(rand(Char.(32:126), rand(1:32))...) for k in 1:N÷K], N);
 @time radixsort!(svec1);
 @test issorted(svec1)
-
-
-
-
-@time a = rand([randstring(rand(0:16)) for i in 1:100_000], 10_000_000);
-
-@time as = StrF{16}.(a);
-
-@time sort(as, alg=RadixSort) |> issorted
-
-@time asb = radixsort(as, rev=true)
-@test issorted(asb, rev=true)
-
-@time asb = radixsort(as)
-@test issorted(asb)

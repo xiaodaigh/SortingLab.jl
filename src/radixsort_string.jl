@@ -18,32 +18,6 @@ primitive type Bits104 104 end
 primitive type Bits112 112 end
 primitive type Bits120 120 end
 
-# winner from benchmarks/which_is_the_fastest_UInt_histogram.jl
-"""
-    uint_hist(bits, [RADIX_SIZE = 16, RADIX_MASK = 0xffff])
-Computes a histogram (counts) for the vector RADIX_SIZE bits at a time. E.g. if eltype(bits) is UInt64 and RADIX_SIZE is 16
-then 4 histograms are created for each of the 16 bit chunks.
-"""
-function uint_hist(bits::Vector{T}, RADIX_SIZE = 16, RADIX_MASK = 0xffff) where T
-    #println("hello")
-    iter = ceil(Integer, sizeof(T)*8/RADIX_SIZE)
-    #hist = zeros(UInt32, 2^RADIX_SIZE, iter, nthreads())
-    hist = zeros(UInt32, 2^RADIX_SIZE, iter)
-    #@threads for j = 1:length(bits)
-    for j = 1:length(bits)
-        for i = 0:iter-1
-            @inbounds hist[1+Int((bits[j] >> (i * RADIX_SIZE)) & RADIX_MASK), i+1] += 1
-        end
-    end
-    #@threads for j in 1:iter
-    # for j in 1:iter
-    #     for i = 2:nthreads()
-    #         @inbounds hist[:, j, 1] .+= hist[:, j, i]
-    #     end
-    # end
-    hist
-end
-
 # sort it by using sorttwo! on the pointer
 function sort_spointer!(svec::Vector{String}, lo::Int, hi::Int, o::O) where O <: Union{ForwardOrdering, ReverseOrdering}
     if lo >= hi;  return svec;  end
@@ -82,85 +56,6 @@ function sort_spointer!(svec::Vector{String}, lo::Int, hi::Int, o::O) where O <:
     end
     # unsafe_pointer_to_objref.(ptrs - 8)
     svec
-end
-
-"""
-    sorttwo!(vs, index)
-
-Sort both the `vs` and reorder `index` at the same. This allows for faster sortperm
-for radix sort.
-"""
-function sorttwo!(vs::Vector{T}, index, lo::Int = 1, hi::Int=length(vs), RADIX_SIZE = 16, RADIX_MASK = 0xffff) where T <:Union{BaseRadixSortSafeTypes}
-    # Input checking
-    if lo >= hi;  return (vs, index);  end
-    #println(vs)
-    o = Forward
-
-    # Init
-    iters = ceil(Integer, sizeof(T)*8/RADIX_SIZE)
-    # number of buckets in the counting step
-    nbuckets = 2^RADIX_SIZE
-
-    # Histogram for each element, radix
-    bin = uint_hist(vs, RADIX_SIZE, RADIX_MASK)
-
-    # bin = zeros(UInt32, nbuckets, iters)
-    # if lo > 1;  bin[1,:] = lo-1;  end
-
-    # Sort!
-    swaps = 0
-    len = hi-lo+1
-
-    index1 = similar(index)
-    ts=similar(vs)
-    for j = 1:iters
-        # Unroll first data iteration, check for degenerate case
-        v = uint_mapping(o, vs[hi])
-        idx = Int((v >> ((j-1)*RADIX_SIZE)) & RADIX_MASK) + 1
-
-        # are all values the same at this radix?
-        if bin[idx,j] == len;  continue;  end
-
-        # cbin = cumsum(bin[:,j])
-        # tries to achieve the above one-liner with more efficiency
-        cbin = zeros(UInt32, nbuckets)
-        cbin[1] = bin[1,j]
-        for i in 2:nbuckets
-            cbin[i] = cbin[i-1] + bin[i,j]
-        end
-
-        ci = cbin[idx]
-        #println((ci, hi))
-        ts[ci] = vs[hi]
-        index1[ci] = index[hi]
-        # println(cbin[idx])
-        cbin[idx] -= 1
-
-        # Finish the loop...
-        #@inbounds
-        for i in hi-1:-1:lo
-            v = uint_mapping(o, vs[i])
-            idx = Int((v >> ((j-1)*RADIX_SIZE)) & RADIX_MASK) + 1
-            ci = cbin[idx]
-            #println(ci)
-            ts[ci] = vs[i]
-            index1[ci] = index[i]
-            cbin[idx] -= 1
-        end
-        vs,ts = ts,vs
-        index, index1 = index1, index
-        swaps += 1
-    end
-
-    if isodd(swaps)
-        vs,ts = ts,vs
-        index, index1 = index1, index
-        for i = lo:hi
-            @inbounds vs[i] = ts[i]
-            @inbounds index[i] = index1[i]
-        end
-    end
-    (vs, index)
 end
 
 # loads `remaining_bytes_to_load` bytes from `ptrs` which is a C-style pointer to a string

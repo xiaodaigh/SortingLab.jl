@@ -16,7 +16,10 @@ function fsortperm(a::AbstractVector{<:Integer}; counting_sort_cutoff = 2048, RA
     # elseif alg == :lsd
     #     return Int.(fsortperm_int_range_lsd(a, rangelen, minval, RADIX_SIZE))
     else
-        return fsortperm_int_range_lsd(a, rangelen, minval, RADIX_SIZE, rev = rev)
+        #return fsortperm_int_range_lsd(a, rangelen, minval, RADIX_SIZE, rev = rev)
+        i = collect(1:length(a))
+        sorttwo!(copy(a), i)
+        return i
     end
 end
 
@@ -162,7 +165,7 @@ function fsortperm_int_range_counting_sort(a, rangelen, minval; rev = false)
     cumsum!(cnts, cnts)
 
     la = length(a)
-    res = Vector{Int}(la)
+    res = Vector{Int}(undef, la)
     if rev
         @inbounds for i in la:-1:1
             ai = a[i] - minval + 1
@@ -191,7 +194,7 @@ function fsortperm_int_range_lsd(a::Vector{T}, rangelen, minval, RADIX_SIZE; rev
     # println(RADIX_SIZE," ", now())
     # @assert 2^32 > rangelen
     # @assert 2^32 >= length(a)
-    
+
     vs = Vector{Pair{UInt32, T}}(undef, length(a))
     if rev
         maxval = maximum(a)
