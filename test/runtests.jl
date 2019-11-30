@@ -9,6 +9,8 @@ N = 204900
 K = 100
 
 include("fsort.jl")
+include("fsort-missing.jl")
+include("fsortperm-missing.jl")
 
 # test fsortperm
 # a = rand(1:Int(N/K), N);
