@@ -23,7 +23,8 @@ g = groupedbar(
     repeat([" Base\n sort(x)", "SortingAlgorithms.jl\n sort(x, alg=RadixSort)", "  SortingLab.jl\n fsort(x)"], outer=2),
     [base_sort, sortingalg_sort, sortinglab_fsort,
     base_sort_wm, sortingalg_sort_wm, sortinglab_fsort_wm];
-    group = repeat(["w/o missing", "with missing"], inner=3)
+    group = repeat(["w/o missing", "with missing"], inner=3),
+    ylab = "Seconds"
 )
 
 title!(g, "Sort 100m integer")
@@ -49,7 +50,8 @@ g2 = groupedbar(
     repeat([" Base\n sortperm(x)", "SortingAlgorithms.jl\n sortperm(x, alg=RadixSort)", "  SortingLab.jl\n fsortperm(x)"], outer=2),
     [base_sortperm, sortingalg_sortperm, sortinglab_fsortperm,
     base_sortperm_wm, sortingalg_sortperm_wm, sortinglab_fsortperm_wm];
-    group = repeat(["w/o missing", "with missing"], inner=3)
+    group = repeat(["w/o missing", "with missing"], inner=3),
+    ylab = "Seconds"
 )
 
 title!(g2, "SortPerm 100m integer")
