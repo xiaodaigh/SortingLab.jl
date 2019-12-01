@@ -1,15 +1,11 @@
 # SortingLab
 Experimental implementation of sorting algorithms and APIs. If proven to be useful they will be contributed back to Julia base or SortingAlgorithms.jl in time
 
-# Faster String Sort and Sortperm & CategoricalArrays Sort
+# Faster Sort and Sortperm
 
-The main functions exported by SortingLab is
+The main function exported by SortingLab is `fsort` and `fsortperm` which generally implements faster algorithms than `sort` and `sortperm` for `CategoricalArrays.CategoricalVector`, `Vector{T}`,  `Vector{Union{T, Missing}}` where `T` is
 
-| Function | Type | Description |
-| -- | -- | -- |
-| `radixsort`, `radixsort!` | String, [StrF](https://github.com/tpapp/StrFs.jl) | Implements the radix sort algorithm for Strings, and [StrFs](https://github.com/tpapp/StrFs.jl) (up to `sizeof` 16 for now). |
-| `fsort`, `fsort!` | CategoricalArrays | Implements the counting sort algorithm  |
-
+* Int*, UInt*, Float*, String
 
 ## Usage
 ````julia
@@ -19,13 +15,15 @@ N = 1_000_000;
 K = 100;
 
 svec = rand("id".*string.(1:N÷K, pad=10), N);
-svec_sorted = radixsort(svec);
-issorted(svec_sorted), issorted(svec) # true, false
+
+svec_sorted = fsort(svec);
+@test issorted(svec_sorted)
+@test issorted(svec) == false
 ````
 
 
 ````
-(true, false)
+Test Passed
 ````
 
 
@@ -36,7 +34,7 @@ sorted_idx = fsortperm(svec)
 issorted(svec[sorted_idx]) #true
 
 # in place string sort
-radixsort!(svec);
+fsort!(svec);
 issorted(svec) # true
 ````
 
@@ -65,10 +63,20 @@ Test Passed
 
 
 
+
+
+### Sorting `Vector{Union{T, Missing}}`
+
+For vectors that contain `missing`, the `sort` and `sortperm` performance is often sub-optimal in `Base` and is not supported in `SortingAlgorithms.jl`'s radixsort implementation. This is solved by `SortingLab.jl` `fsort`, see Benchmarks Section
+
 ````julia
-# in place CategoricalArray sort
-fsort!(byvec)
-@test issorted(byvec)
+using Test
+using Missings: allowmissing
+x = allowmissing(rand(1:10_000, 1_000_000))
+x[rand(1:length(x), 100_000)] .= missing
+
+using SortingLab
+@test isequal(fsort(x), sort(x))
 ````
 
 
@@ -78,10 +86,17 @@ Test Passed
 
 
 
-## Benchmark
+
+
+
+## Benchmarks
 ![Base.sort vs SortingLab.radixsort](benchmarks/sort_vs_radixsort.png)
 
 ![Base.sort vs SortingLab.radixsort](benchmarks/sortperm_vs_fsortperm.png)
+
+![Base.sort vs SortingLab.fsort](benchmarks/fsort_missing_100m_int.png)
+
+![Base.sortperm vs SortingLab.sortperm](benchmarks/fsortperm_missing_100m_int.png)
 
 ## Benchmarking code
 ````julia
