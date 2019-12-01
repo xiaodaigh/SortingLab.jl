@@ -1,6 +1,5 @@
-using Pkg
-Pkg.activate(".")
+using Pkg; Pkg.activate("c:/git/SortingLab")
 
 using Weave
 
-weave("README.jmd", out_path=:pwd, doctype="github")
+weave("c:/git/SortingLab/README.jmd", out_path="c:/git/SortingLab/", doctype="github")
