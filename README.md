@@ -1,5 +1,5 @@
 # SortingLab
-Experimental implementation of sorting algorithms and APIs. If proven to be useful they will be contributed back to Julia base or SortingAlgorithms.jl in time
+An alternative implementation of sorting algorithms and APIs. The ultimate aim is to contribute back to Julia base or SortingAlgorithms.jl. However, there is commitment to keep this package's API stable and supported, so other developers can rely on the implementation and API here.
 
 # Faster Sort and Sortperm
 
@@ -8,6 +8,7 @@ The main function exported by SortingLab is `fsort` and `fsortperm` which genera
 * Int*, UInt*, Float*, String
 
 ## Usage
+
 ````julia
 using SortingLab;
 using Test
