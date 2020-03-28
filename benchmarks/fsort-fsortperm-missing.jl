@@ -27,7 +27,7 @@ g = groupedbar(
     ylab = "Seconds"
 )
 
-title!(g, "Sort 100m integer")
+title!(g, "Sort 100m integers")
 
 savefig(g, "benchmarks/fsort_missing_100m_int.png")
 
@@ -54,6 +54,6 @@ g2 = groupedbar(
     ylab = "Seconds"
 )
 
-title!(g2, "SortPerm 100m integer")
+title!(g2, "SortPerm (order) 100m integers")
 
 savefig(g2, "benchmarks/fsortperm_missing_100m_int.png")
