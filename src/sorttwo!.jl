@@ -41,7 +41,7 @@ function sorttwo!(vs::Vector{T}, index, lo::Int = 1, hi::Int=length(vs), RADIX_S
         # tries to achieve the above one-liner with more efficiency
         cbin = zeros(UInt32, nbuckets)
         cbin[1] = bin[1,j]
-        for i in 2:nbuckets
+        @inbounds for i in 2:nbuckets
             cbin[i] = cbin[i-1] + bin[i,j]
         end
 
@@ -52,9 +52,8 @@ function sorttwo!(vs::Vector{T}, index, lo::Int = 1, hi::Int=length(vs), RADIX_S
         # println(cbin[idx])
         cbin[idx] -= 1
 
-        # Finish the loop...
-        #@inbounds
-        for i in hi-1:-1:lo
+        # Finish the loop...        
+        @inbounds for i in hi-1:-1:lo
             v = uint_mapping(o, vs[i])
             idx = Int((v >> ((j-1)*RADIX_SIZE)) & RADIX_MASK) + 1
             ci = cbin[idx]
