@@ -115,6 +115,9 @@ groupedbar(
 savefig("benchmarks/sortperm_vs_fsortperm.png")
 ```
 
+# Similar package
+
+https://github.com/JuliaCollections/SortingAlgorithms.jl
 
 # Build status
 [![Build Status](https://travis-ci.org/xiaodaigh/SortingLab.jl.svg?branch=master)](https://travis-ci.org/xiaodaigh/SortingLab.jl)
