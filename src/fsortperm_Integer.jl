@@ -6,7 +6,7 @@ const VTV = Vector{VT}
 
 function fsortperm(a::AbstractVector{<:Integer}; counting_sort_cutoff = 2048, RADIX_SIZE = 10, alg = :lsd, rev = false)
     minval, maxval = extrema(a)
-    rangelen = maxval - minval + 1
+    rangelen = BigInt(maxval) - minval + 1
 
     if rangelen <= counting_sort_cutoff
         return fsortperm_int_range_counting_sort(a, rangelen, minval, rev = rev)
