@@ -1,3 +1,9 @@
+---
+author: "Dai ZJ"
+title: "SortingLab README"
+date: "2019--09-28"
+---
+
 # SortingLab
 An alternative implementation of sorting algorithms and APIs. The ultimate aim is to contribute back to Julia base or SortingAlgorithms.jl. However, there is commitment to keep this package's API stable and supported, so other developers can rely on the implementation and API here.
 
@@ -9,7 +15,7 @@ The main function exported by SortingLab is `fsort` and `fsortperm` which genera
 
 ## Usage
 
-````julia
+```julia
 using SortingLab;
 using Test
 N = 1_000_000;
@@ -20,16 +26,15 @@ svec = rand("id".*string.(1:N÷K, pad=10), N);
 svec_sorted = fsort(svec);
 @test issorted(svec_sorted)
 @test issorted(svec) == false
-````
+```
 
-
-````
+```
 Test Passed
-````
+```
 
 
 
-````julia
+```julia
 # faster string sortperm
 sorted_idx = fsortperm(svec)
 issorted(svec[sorted_idx]) #true
@@ -37,16 +42,15 @@ issorted(svec[sorted_idx]) #true
 # in place string sort
 fsort!(svec);
 issorted(svec) # true
-````
+```
 
-
-````
+```
 true
-````
+```
 
 
 
-````julia
+```julia
 # CategoricalArray sort
 using CategoricalArrays
 pools = "id".*string.(1:100,3);
@@ -55,12 +59,11 @@ byvec = compress(byvec);
 
 byvec_sorted = fsort(byvec);
 @test issorted(byvec_sorted)
-````
+```
 
-
-````
+```
 Test Passed
-````
+```
 
 
 
@@ -70,7 +73,7 @@ Test Passed
 
 For vectors that contain `missing`, the `sort` and `sortperm` performance is often sub-optimal in `Base` and is not supported in `SortingAlgorithms.jl`'s radixsort implementation. This is solved by `SortingLab.jl` `fsort`, see Benchmarks Section
 
-````julia
+```julia
 using Test
 using Missings: allowmissing
 x = allowmissing(rand(1:10_000, 1_000_000))
@@ -78,12 +81,11 @@ x[rand(1:length(x), 100_000)] .= missing
 
 using SortingLab
 @test isequal(fsort(x), sort(x))
-````
+```
 
-
-````
+```
 Test Passed
-````
+```
 
 
 
@@ -100,8 +102,7 @@ Test Passed
 ![Base.sortperm vs SortingLab.sortperm](benchmarks/fsortperm_missing_100m_int.png)
 
 ## Benchmarking code
-````julia
-
+```julia
 using SortingLab;
 using BenchmarkTools;
 import Random: randstring
@@ -138,11 +139,13 @@ groupedbar(
     group = repeat(["Base.sortperm","SortingLab.fsortperm"], outer = 2),
     title = "Strings sortperm (1m rows): Base vs SortingLab")
 savefig("benchmarks/sortperm_vs_fsortperm.png")
-````
+```
 
 
 
+# Similar package
 
+https://github.com/JuliaCollections/SortingAlgorithms.jl
 
 # Build status
 [![Build Status](https://travis-ci.org/xiaodaigh/SortingLab.jl.svg?branch=master)](https://travis-ci.org/xiaodaigh/SortingLab.jl)
