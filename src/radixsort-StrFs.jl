@@ -15,7 +15,7 @@ SortingAlgorithms.uint_mapping(::Base.Order.ForwardOrdering, s::StrF{S}) where S
     ((res << (8*(16-sizeof(s)))) >> (8*(16-sizeof(s)))) |> ntoh
 end
 
-radixsort(v::Vector{StrF{S}}; rev = false) where S = begin
+radixsort(v::AbstractVector{StrF{S}}; rev = false) where S = begin
     if S <=16
         return sort(v, alg = RadixSort, rev = rev)
     else
@@ -23,7 +23,7 @@ radixsort(v::Vector{StrF{S}}; rev = false) where S = begin
     end
 end
 
-radixsort!(v::Vector{StrF{S}}; rev = false) where S = begin
+radixsort!(v::AbstractVector{StrF{S}}; rev = false) where S = begin
     if S <=16
         return sort!(v, alg = RadixSort, rev = rev)
     else
