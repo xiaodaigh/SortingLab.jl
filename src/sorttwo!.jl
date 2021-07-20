@@ -6,7 +6,7 @@ import StatsBase: BaseRadixSortSafeTypes
 Sort both the `vs` and reorder `index` at the same. This allows for faster sortperm
 for radix sort.
 """
-function sorttwo!(vs::AbstractVector{T}, index=1:length(vs), lo::Int = 1, hi::Int=length(vs), RADIX_SIZE = 16, RADIX_MASK = 0xffff) where T # <:Union{BaseRadixSortSafeTypes}
+function sorttwo!(vs::AbstractVector{T}, index, lo::Int = 1, hi::Int=length(vs), RADIX_SIZE = 16, RADIX_MASK = 0xffff) where T # <:Union{BaseRadixSortSafeTypes}
     # Input checking
     if lo >= hi;  return (vs, index);  end
     #println(vs)
