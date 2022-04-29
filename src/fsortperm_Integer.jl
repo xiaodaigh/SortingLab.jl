@@ -190,7 +190,7 @@ end
 # based on sortperm_int_range_p1
 # see https://discourse.julialang.org/t/ironic-observation-about-sort-and-sortperm-speed-for-small-intergers-vs-r/8715/31?u=xiaodai
 ################################################################################
-function fsortperm_int_range_lsd(a::Vector{T}, rangelen, minval, RADIX_SIZE; rev = false) where T
+function fsortperm_int_range_lsd(a::AbstractVector{T}, rangelen, minval, RADIX_SIZE; rev = false) where T
     # println(RADIX_SIZE," ", now())
     # @assert 2^32 > rangelen
     # @assert 2^32 >= length(a)
@@ -211,7 +211,7 @@ function fsortperm_int_range_lsd(a::Vector{T}, rangelen, minval, RADIX_SIZE; rev
     [Int(vs1.first) for vs1 in vs]
 end
 
-function fsortandperm_int_range_lsd(a::Vector{T}, rangelen, minval, RADIX_SIZE; rev = false) where T
+function fsortandperm_int_range_lsd(a::AbstractVector{T}, rangelen, minval, RADIX_SIZE; rev = false) where T
     vs = Vector{Pair{UInt32, T}}(length(a))
     if rev
         maxval = maximum(a)

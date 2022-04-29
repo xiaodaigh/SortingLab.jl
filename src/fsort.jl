@@ -66,5 +66,5 @@
 
 export fsort, fsort!
 
-fsort(x::Vector{T}; rev = false) where T <:BaseRadixSortSafeTypes = sort(x, alg = RadixSort; rev = rev)
-fsort!(x::Vector{T}; rev = false) where T <:BaseRadixSortSafeTypes = sort!(x, alg = RadixSort; rev = rev)
+fsort(x::AbstractVector{T}; rev = false) where T <:BaseRadixSortSafeTypes = sort(x, alg = RadixSort; rev = rev)
+fsort!(x::AbstractVector{T}; rev = false) where T <:BaseRadixSortSafeTypes = sort!(x, alg = RadixSort; rev = rev)

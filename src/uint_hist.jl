@@ -5,7 +5,7 @@
 Computes a histogram (counts) for the vector RADIX_SIZE bits at a time. E.g. if eltype(bits) is UInt64 and RADIX_SIZE is 16
 then 4 histograms are created for each of the 16 bit chunks.
 """
-function uint_hist(bits::Vector{T}, RADIX_SIZE = 16, RADIX_MASK = 0xffff) where T
+function uint_hist(bits::AbstractVector{T}, RADIX_SIZE = 16, RADIX_MASK = 0xffff) where T
     iter = ceil(Integer, sizeof(T)*8/RADIX_SIZE)
     hist = zeros(UInt32, 2^RADIX_SIZE, iter)
 
