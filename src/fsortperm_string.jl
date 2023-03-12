@@ -1,4 +1,4 @@
-import SortingAlgorithms: uint_mapping, RadixSort
+import SortingAlgorithms: RadixSort
 import Base.Ordering
 
 function load_uint(::Type{T}, s::String, skipbytes) where T <: Unsigned
