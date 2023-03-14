@@ -1,9 +1,11 @@
+import Base.Sort: uint_map
+
 
 "Value and index tuple: enables sortandperm_radix"
 Valindex{T, S<:Integer} = Tuple{T, S}
 
 isbits(::Type{Valindex{T,S}}) where {T,S} = Base.isbits(T)
-uint_mapping(o, vi::Valindex{T,S}) where {T,S} = uint_mapping(o, vi[1]) # enable sorting
+uint_map(o, vi::Valindex{T,S}) where {T,S} = uint_map(o, vi[1]) # enable sorting
 ordtype(o, vs::Valindex{T,S}) where {T,S} = Base.ordtype(o, vs[1])
 sizeof(::Type{Valindex{T,S}}) where {T,S} = Base.sizeof(T)
 

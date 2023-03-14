@@ -1,7 +1,5 @@
 using SortingLab
 using Base.Test
-using SortingAlgorithms
-import SortingAlgorithms: load_bits
 
 # write your own tests here
 # @test 1 == 2

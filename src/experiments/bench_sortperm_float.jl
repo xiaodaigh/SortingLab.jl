@@ -1,4 +1,4 @@
-using SortingLab, SortingAlgorithms
+using SortingLab
 
 a = rand(Float32, 1_000_000)
 

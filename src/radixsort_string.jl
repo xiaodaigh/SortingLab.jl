@@ -1,6 +1,6 @@
 #using Base.Threads
 import StatsBase: BaseRadixSortSafeTypes
-import Base: Forward, ForwardOrdering, Reverse, ReverseOrdering, sortperm, Ordering,
+import Base: Forward, Reverse, ReverseOrdering, sortperm, Ordering,
             setindex!, getindex, similar, sort!, Reverse
 
 import Base.Threads: nthreads, threadid
@@ -19,7 +19,7 @@ primitive type Bits112 112 end
 primitive type Bits120 120 end
 
 # sort it by using sorttwo! on the pointer
-function sort_spointer!(svec::Vector{String}, lo::Int, hi::Int, o::O) where O <: Union{ForwardOrdering, ReverseOrdering}
+function sort_spointer!(svec::Vector{String}, lo::Int, hi::Int, o)
     if lo >= hi;  return svec;  end
     # the length subarray to sort
     l = hi - lo + 1
@@ -185,7 +185,7 @@ end
 
 Applies radix sort to the string vector, svec, and sort it in place.
 """
-function radixsort!(svec::AbstractVector{String}, lo::Int, hi::Int, o::O; RADIX_SIZE = 16, RADIX_MASK = 0xffff) where O <: Union{ForwardOrdering, ReverseOrdering}
+function radixsort!(svec::AbstractVector{String}, lo::Int, hi::Int, o; RADIX_SIZE = 16, RADIX_MASK = 0xffff)
     if lo >= hi;  return svec;  end
     # the length subarray to sort
     l = hi - lo + 1

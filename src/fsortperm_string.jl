@@ -1,4 +1,3 @@
-import SortingAlgorithms: uint_mapping, RadixSort
 import Base.Ordering
 
 function load_uint(::Type{T}, s::String, skipbytes) where T <: Unsigned
@@ -29,21 +28,6 @@ function load_uint(sptr::Ptr{T}, ss, skipbytes) where T <: Unsigned
 end
 
 
-# function load_uint_shift(s::String, skipbytes)
-#     s1 = ((((s |> pointer |> Ptr{UInt64}) + skipbytes) |> unsafe_load) << 32) >> 32
-#     Base.zext_int(UInt64, s1) |> ntoh
-# end
-
-# timing is similar
-# @time load_uint.(svec, 4);
-# @time load_uint_shift.(svec, 4);
-
-# @time radixsort(svec); #20
-# @time sort!(svec, by = x -> load_uint(x, 4)); #61
-
-# @time svec_sorted = radixsort(svec);
-# print(issorted(svec_sorted))
-
 """
     fsortperm(svec)
 
@@ -60,7 +44,7 @@ function fsortperm(svec::AbstractVector{String}, ::Type{T} = UInt) where T<:Unsi
         pairs[i] = tuple(load_uint(T, svec1, strlen), i)
     end
 
-    sort!(pairs, by=x->x[1], alg = RadixSort)
+    sort!(pairs, by=x->x[1])
 
     while strlen > 0
         strlen = max(strlen-sizeof(T), 0)
@@ -70,32 +54,7 @@ function fsortperm(svec::AbstractVector{String}, ::Type{T} = UInt) where T<:Unsi
             pairs[i] = tuple(load_uint(T, svec[p2], strlen), p2)
         end
 
-        sort!(pairs, by=x->x[1], alg = RadixSort)
+        sort!(pairs, by=x->x[1])
     end
     return [x[2] for x in pairs]
 end
-
-
-# function fsortperm3(svec::AbstractVector{String}, ::Type{T} = UInt) where T<:Unsigned
-#     strlen = maximum(sizeof, svec)
-#     strlen = max(strlen-sizeof(T), 0)
-
-#     l = length(svec)
-
-#     pairs = Vector{Pair{T, UInt32}}(l)
-#     for (i, svec1) = enumerate(svec)
-#         pairs[i] = Pair(load_uint(T, svec1, strlen), i)
-#     end
-
-#     sort!(pairs, by=x->x.first, alg = RadixSort)
-
-#     while strlen > 0
-#         strlen = max(strlen-4, 0)
-
-#         for (i, svec1) = enumerate(svec)
-#             pairs[i] = Pair(load_uint(T, svec1, strlen), pairs[2][2])
-#         end
-#         sort!(pairs, by=x->x.first, alg = RadixSort)
-#     end
-#     return [x.second for x in pairs]
-# end
