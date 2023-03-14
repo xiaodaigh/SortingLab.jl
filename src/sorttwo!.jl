@@ -1,4 +1,5 @@
 import StatsBase: BaseRadixSortSafeTypes
+using Base.Sort: uint_map
 
 """
     sorttwo!(vs, index)
@@ -31,7 +32,7 @@ function sorttwo!(vs::Vector{T}, index, lo::Int = 1, hi::Int=length(vs), RADIX_S
     ts=similar(vs)
     for j = 1:iters
         # Unroll first data iteration, check for degenerate case
-        v = uint_mapping(o, vs[hi])
+        v = uint_map(vs[hi], o)
         idx = Int((v >> ((j-1)*RADIX_SIZE)) & RADIX_MASK) + 1
 
         # are all values the same at this radix?
@@ -52,9 +53,9 @@ function sorttwo!(vs::Vector{T}, index, lo::Int = 1, hi::Int=length(vs), RADIX_S
         # println(cbin[idx])
         cbin[idx] -= 1
 
-        # Finish the loop...        
+        # Finish the loop...
         @inbounds for i in hi-1:-1:lo
-            v = uint_mapping(o, vs[i])
+            v = uint_map(vs[i], o)
             idx = Int((v >> ((j-1)*RADIX_SIZE)) & RADIX_MASK) + 1
             ci = cbin[idx]
             #println(ci)

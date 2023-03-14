@@ -2,7 +2,6 @@ using SortingLab
 using Test
 using CategoricalArrays
 using DataFrames, Random
-using SortingAlgorithms
 
 
 N = 204900

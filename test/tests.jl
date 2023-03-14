@@ -1,13 +1,5 @@
 using SortingLab
 using Base.Test
-using SortingAlgorithms
-import SortingAlgorithms: load_bits
-
-
-using Base.Sort: RadixSort;
-sort(rand(100), alg=RadixSort())
-
-typeof(RadixSort())
 
 # write your own tests here
 # @test 1 == 2

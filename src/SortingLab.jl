@@ -17,7 +17,7 @@ export fsortperm, radixsort, radixsort!, fsort, fsort!
 include("fsortperm.jl")
 include("sorttwo!.jl")
 include("uint_hist.jl")
-include("uint_mapping.jl")
+include("uint_map.jl")
 include("radixsort_string.jl")
 include("fsortperm_string.jl")
 include("fsortperm_Integer.jl")

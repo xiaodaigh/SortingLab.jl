@@ -1,12 +1,12 @@
-import Base: Forward, ForwardOrdering, Reverse, ReverseOrdering, Lexicographic, LexicographicOrdering, sortperm, Ordering, 
+using Base: uint_map
+
+import Base: Forward, Reverse, Lexicographic, sortperm, Ordering,
             setindex!, getindex, similar, Algorithm
-import SortingAlgorithms: RadixSort, RadixSortAlg
+
 
 struct StringRadixSortAlg <: Algorithm end
 const StringRadixSort = StringRadixSortAlg() # this is needed to make sortperm work
 
-import Base: Forward, ForwardOrdering, Reverse, ReverseOrdering, sortperm, Ordering, 
-            setindex!, getindex, similar
 
 
 # Radix sort for strings
@@ -30,7 +30,7 @@ function sort!(svec::AbstractVector{String}, lo::Int, hi::Int, ::StringRadixSort
     # the length subarray to sort
     l = hi - lo + 1
 
-    # find the maximum string length    
+    # find the maximum string length
     lens = maximum(sizeof, svec)
     skipbytes = lens
     if lens > 0
@@ -100,7 +100,7 @@ function sorttwo!(vs::AbstractVector{T}, index, lo::Int = 1, hi::Int=length(vs))
 
     # Histogram for each element, radix
     for i = lo:hi
-        v = uint_mapping(o, vs[i])
+        v = uint_map(o, vs[i])
         for j = 1:iters
             idx = Int((v >> (j-1)*RADIX_SIZE) & RADIX_MASK) + 1
             @inbounds bin[idx,j] += 1
@@ -115,7 +115,7 @@ function sorttwo!(vs::AbstractVector{T}, index, lo::Int = 1, hi::Int=length(vs))
     ts=similar(vs)
     for j = 1:iters
         # Unroll first data iteration, check for degenerate case
-        v = uint_mapping(o, vs[hi])
+        v = uint_map(o, vs[hi])
         idx = Int((v >> (j-1)*RADIX_SIZE) & RADIX_MASK) + 1
 
         # are all values the same at this radix?
@@ -136,7 +136,7 @@ function sorttwo!(vs::AbstractVector{T}, index, lo::Int = 1, hi::Int=length(vs))
 
         # Finish the loop...
         @inbounds for i in hi-1:-1:lo
-            v = uint_mapping(o, vs[i])
+            v = uint_map(o, vs[i])
             idx = Int((v >> (j-1)*RADIX_SIZE) & RADIX_MASK) + 1
             ci = cbin[idx]
             ts[ci] = vs[i]

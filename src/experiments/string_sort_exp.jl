@@ -1,3 +1,5 @@
+using SortingLab
+
 function g2(byvec, valvec)
     cv = copy(valvec)
     cb = copy(byvec)
@@ -59,12 +61,12 @@ gc_enable(false)
 issorted(bb)
 gc_enable(true)
 
-using SortingLab, SortingAlgorithms
+
 
 srand(1);
 svec = rand([randstring(8) for i=1:1_000_000], 100_000_000)
 function pointersort(svec)
-    # sp = 
+    # sp =
     @inbounds sv = collect(zip(1:length(svec), unsafe_load.(Ptr{UInt}.(pointer.(svec)))))
     # sv = Vector{Tuple{Ptr{UInt8}, UInt}}(length(svec))
     # for (i,s) in enumerate(svec)
