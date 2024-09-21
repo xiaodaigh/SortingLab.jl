@@ -1,7 +1,7 @@
 name = "SortingLab"
 uuid = "562c1548-17b8-5b69-83cf-d8aebec229f5"
 authors = ["Dai ZJ <zhuojia.dai@gmail.com>"]
-version = "0.3.0"
+version = "0.3.1"
 
 [deps]
 CategoricalArrays = "324d7699-5711-5eae-9e2f-1d82baa6b597"

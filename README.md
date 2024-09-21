@@ -1,7 +1,7 @@
 ---
 author: "Dai ZJ"
 title: "SortingLab README"
-date: "2019--09-28"
+date: "2024--09-21"
 ---
 
 # SortingLab
@@ -9,9 +9,9 @@ An alternative implementation of sorting algorithms and APIs. The ultimate aim i
 
 # Faster Sort and Sortperm
 
-The main function exported by SortingLab is `fsort` and `fsortperm` which generally implements faster algorithms than `sort` and `sortperm` for `CategoricalArrays.CategoricalVector`, `Vector{T}`,  `Vector{Union{T, Missing}}` where `T` is
+The main function exported by SortingLab is `fsort` and `fsortperm` which generally implements faster algorithms than `sort` and `sortperm` for `CategoricalArrays.CategoricalVector`, `Vector{T}`,  `Vector{Union{String, Missing}}` where `T` is
 
-* Int*, UInt*, Float*, String
+**Update Sep'2024**: SortingLab.jl used to be faster than base on integer sorting which is no longer the case! Well done base!
 
 **Note**: The reason why we restrict the type to `Vector` is that SortingLab.jl assumes something about memory layout and hence `Vector` provides that guarantee in the types supported.
 
@@ -97,21 +97,25 @@ Test Passed
 ## Benchmarks
 ![Base.sort vs SortingLab.radixsort](benchmarks/sort_vs_radixsort.png)
 
-![Base.sort vs SortingLab.radixsort](benchmarks/sortperm_vs_fsortperm.png)
+#![Base.sort vs SortingLab.radixsort](benchmarks/sortperm_vs_fsortperm.png)
 
-![Base.sort vs SortingLab.fsort](benchmarks/fsort_missing_100m_int.png)
+![Integer Base.sort vs SortingLab.fsort](benchmarks/int_1m_sort.png)
 
-![Base.sortperm vs SortingLab.sortperm](benchmarks/fsortperm_missing_100m_int.png)
+![Integer Base.sort vs SortingLab.fsort](benchmarks/int_1m_sortperm.png)
 
 ## Benchmarking code
 ```julia
 using SortingLab;
 using BenchmarkTools;
 import Random: randstring
+using Test
+using Missings: allowmissing
+using Plots, StatsPlots
 
 N = 1_000_000;
 K = 100;
 
+# String Sort
 svec = rand("id".*string.(1:N÷K, pad=10), N);
 sort_id_1m = @belapsed sort($svec);
 radixsort_id_1m = @belapsed radixsort($svec);
@@ -126,8 +130,7 @@ radixsort_r_1m = @belapsed radixsort($rsvec);
 sortperm_r_1m = @belapsed sortperm($rsvec);
 fsortperm_r_1m = @belapsed fsortperm($rsvec);
 
-using Plots
-using StatsPlots
+
 groupedbar(
     repeat(["IDs", "Random len 32"], inner=2),
     [sort_id_1m, radixsort_id_1m, sort_r_1m, radixsort_r_1m],
@@ -142,6 +145,12 @@ groupedbar(
     title = "Strings sortperm (1m rows): Base vs SortingLab")
 savefig("benchmarks/sortperm_vs_fsortperm.png")
 ```
+
+```
+"C:\\git\\SortingLab\\benchmarks\\sortperm_vs_fsortperm.png"
+```
+
+
 
 
 

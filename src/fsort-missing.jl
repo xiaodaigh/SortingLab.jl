@@ -1,4 +1,4 @@
-fsort(x::AbstractVector{Union{T, Missing}}; rev = false) where T = begin
+function fsort(x::AbstractVector{Union{String, Missing}}; rev = false)
     nmissing = sum(ismissing, x)
     cx = similar(x)
     cx[1:length(x) - nmissing] .= fsort(collect(skipmissing(x)); rev = rev)
